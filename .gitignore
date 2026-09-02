@@ -1,0 +1,8 @@
+# Internal planning documents — not for the public repo
+docs/
+
+# Scratch
+shot_desktop.png
+*.pyc
+__pycache__/
+.DS_Store

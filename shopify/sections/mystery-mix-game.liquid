@@ -1,0 +1,150 @@
+{% comment %}
+  Chewbie's Mystery Mix-Up — theme section
+
+  Follows the pattern already used by sections/mystery-game.liquid and
+  sections/easter-mystery-game.liquid on this store, with two fixes:
+
+  1. The origin check compares against the ORIGIN, not the full URL.
+     The existing sections do:
+         event.origin.includes("https://multiply-dev.github.io/house-of-mystery/")
+     event.origin is "https://multiply-dev.github.io" and never contains a
+     path, so that condition is always false, the handler always returns
+     early, and the reCAPTCHA token is never posted back. The captcha
+     handshake has never fired in either shipped campaign.
+
+  2. The frame is aspect-ratio based rather than a hardcoded 900px, and
+     switches to a portrait box under 768px. The game reads its own frame
+     shape, so a landscape box gives the desktop composition and a portrait
+     box gives the stacked mobile one.
+{% endcomment %}
+
+<style>
+  .mm-wrap{
+    display:flex; justify-content:center;
+    background:{{ section.settings.bg_color }};
+    padding:{{ section.settings.pad_top }}px 16px {{ section.settings.pad_bottom }}px;
+  }
+  .mm-frame{
+    position:relative; width:100%;
+    max-width:{{ section.settings.max_width }}px;
+    aspect-ratio:4/3;
+    border:7px solid #fff; border-radius:20px; overflow:hidden;
+  }
+  .mm-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  @media (max-width:768px){
+    .mm-frame{aspect-ratio:9/16;border-width:4px;border-radius:14px}
+  }
+</style>
+
+{% if section.settings.recaptcha_key != blank %}
+  <script src="https://www.google.com/recaptcha/api.js?render={{ section.settings.recaptcha_key }}"></script>
+{% endif %}
+
+<div class="mm-wrap">
+  <div class="mm-frame">
+    <iframe id="mm-game-{{ section.id }}"
+            src="{{ section.settings.game_url }}"
+            title="Chewbie's Mystery Mix-Up"
+            allow="autoplay; web-share"
+            allowfullscreen></iframe>
+  </div>
+</div>
+
+<script>
+(function(){
+  var GAME_URL  = {{ section.settings.game_url | json }};
+  var SITE_KEY  = {{ section.settings.recaptcha_key | json }};
+  var frame     = document.getElementById("mm-game-{{ section.id }}");
+  if(!frame || !GAME_URL) return;
+
+  var GAME_ORIGIN;
+  try { GAME_ORIGIN = new URL(GAME_URL, window.location.href).origin; }
+  catch(e){ return; }
+
+  window.addEventListener("message", function(e){
+    if (e.origin !== GAME_ORIGIN) return;   // origin, not URL — see comment above
+
+    // reCAPTCHA v3: the frame asks, we execute, we post the token back.
+    if (e.data === "request-recaptcha") {
+      if (!SITE_KEY || typeof grecaptcha === "undefined") return;
+      grecaptcha.ready(function(){
+        grecaptcha.execute(SITE_KEY, { action: "mystery_mix_entry" })
+          .then(function(token){
+            frame.contentWindow.postMessage(
+              { type: "recaptcha-token", token: token }, GAME_ORIGIN);
+          });
+      });
+      return;
+    }
+
+    var m = e.data;
+    if (!m || m.source !== "mystery-mix") return;
+
+    if (m.type === "mix_created" && window.dataLayer) {
+      window.dataLayer.push({
+        event: "mystery_mix_created",
+        mystery_mix_flavours: m.guess.join(" + ")
+      });
+    }
+
+    if (m.type === "entry_submitted") {
+      // Hand the entry to whoever captures it. Nothing here stores or sends
+      // anything — wire this to Hulk Form Builder / Mailchimp / an endpoint.
+      document.dispatchEvent(new CustomEvent("mystery-mix:entry", { detail: m.entry }));
+
+      // If the capture side is wired up, acknowledge so the game advances:
+      // frame.contentWindow.postMessage(
+      //   { source:"mystery-mix-host", type:"entry_accepted" }, GAME_ORIGIN);
+    }
+  });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Mystery Mix Game",
+  "class": "mystery-mix-game",
+  "settings": [
+    {
+      "type": "url",
+      "id": "game_url",
+      "label": "Game URL",
+      "info": "The hosted game, e.g. https://multiply-dev.github.io/mystery-mix-up/"
+    },
+    {
+      "type": "text",
+      "id": "recaptcha_key",
+      "label": "reCAPTCHA v3 site key",
+      "info": "Leave blank to disable the captcha handshake."
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background colour",
+      "default": "#740494"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Maximum game width",
+      "min": 600, "max": 1400, "step": 50, "unit": "px",
+      "default": 1100
+    },
+    {
+      "type": "range",
+      "id": "pad_top",
+      "label": "Padding top",
+      "min": 0, "max": 200, "step": 8, "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "pad_bottom",
+      "label": "Padding bottom",
+      "min": 0, "max": 250, "step": 8, "unit": "px",
+      "default": 120
+    }
+  ],
+  "presets": [{ "name": "Mystery Mix Game" }]
+}
+{% endschema %}
