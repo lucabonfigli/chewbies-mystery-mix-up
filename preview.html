@@ -1,0 +1,55 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Mystery Mix-Up — embed preview</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  /* Mirrors shopify/sections/mystery-mix-game.liquid so the framing can be
+     checked against last year's build without a Shopify theme. */
+  :root{ --bg:#740494; --ratio-w:5; --ratio-h:4; --max:1100px }
+  *{box-sizing:border-box}
+  body{margin:0;background:#fff;font:14px/1.5 system-ui,-apple-system,sans-serif}
+  .bar{background:#fff;border-bottom:1px solid #e6e6e6;padding:14px 24px;display:flex;
+       gap:18px;align-items:center;flex-wrap:wrap}
+  .bar strong{font-size:15px;letter-spacing:.02em}
+  .bar label{font-size:12px;color:#555;display:flex;gap:6px;align-items:center}
+  .bar input[type=number]{width:58px}
+  .mm-wrap{display:flex;justify-content:center;background:var(--bg);padding:80px 16px 120px}
+  .mm-frame{position:relative;width:100%;max-width:var(--max);
+            aspect-ratio:var(--ratio-w)/var(--ratio-h);
+            border:7px solid #fff;border-radius:20px;overflow:hidden}
+  .mm-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .readout{position:fixed;right:12px;bottom:12px;background:rgba(0,0,0,.75);color:#fff;
+           font:12px/1.4 ui-monospace,monospace;padding:8px 10px;border-radius:6px}
+  @media (max-width:768px){ .mm-frame{aspect-ratio:9/16;border-width:4px;border-radius:14px} }
+</style>
+
+<div class="bar">
+  <strong>Embed preview</strong>
+  <label>ratio <input type="number" id="rw" value="5" min="1" max="21"> :
+    <input type="number" id="rh" value="4" min="1" max="21"></label>
+  <label>max width <input type="number" id="mw" value="1100" min="600" max="1400" step="50">px</label>
+  <label>background <input type="color" id="bg" value="#740494"></label>
+</div>
+
+<div class="mm-wrap">
+  <div class="mm-frame"><iframe id="f" src="index.html?bg=740494" title="Chewbie's Mystery Mix-Up"
+    allow="autoplay"></iframe></div>
+</div>
+
+<div class="readout" id="ro"></div>
+
+<script>
+  const R=document.documentElement.style, f=document.getElementById("f"), ro=document.getElementById("ro");
+  function sync(){
+    const rw=rw_.value, rh=rh_.value, mw=mw_.value, bg=bg_.value;
+    R.setProperty("--ratio-w",rw); R.setProperty("--ratio-h",rh);
+    R.setProperty("--max",mw+"px"); R.setProperty("--bg",bg);
+    f.src="index.html?bg="+bg.replace("#","");
+    setTimeout(()=>{const b=document.querySelector(".mm-frame").getBoundingClientRect();
+      ro.textContent=`frame ${Math.round(b.width)}×${Math.round(b.height)}  ratio ${(b.width/b.height).toFixed(3)}`;},60);
+  }
+  const rw_=document.getElementById("rw"),rh_=document.getElementById("rh"),
+        mw_=document.getElementById("mw"),bg_=document.getElementById("bg");
+  [rw_,rh_,mw_,bg_].forEach(el=>el.addEventListener("change",sync));
+  addEventListener("resize",sync); sync();
+</script>

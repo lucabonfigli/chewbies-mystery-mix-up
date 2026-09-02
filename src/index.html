@@ -234,7 +234,11 @@ const SEAM = 998;                    // x where the comp was split into scene | 
    with it. That boundary is deliberate — see docs/INTEGRATION.md.
    ===================================================================== */
 const VERSION = "1.0.0";
+const QS = new URLSearchParams(location.search);
 const CFG = Object.assign({
+  // ?bg=740494 — the host section passes its own background through so any
+  // letterbox around the stage is invisible against the page
+  pageColor    : "#" + (QS.get("bg") || "740494").replace(/^#/,""),
   targetOrigin : "*",     // tighten to the storefront origin in production
   waitForHost  : false,   // true = hold the confirmation until the host acks
   recaptcha    : false,   // true = ask the host for a v3 token before submitting
@@ -662,6 +666,7 @@ function placeHotspots(){
 }
 
 function init(){
+  document.body.style.background = CFG.pageColor;
   const R=document.documentElement.style;
   R.setProperty("--title-d",`url(${ASSETS.title_d})`); R.setProperty("--title-m",`url(${ASSETS.title_m})`);
   R.setProperty("--rules-d",`url(${ASSETS.rules_d})`); R.setProperty("--rules-m",`url(${ASSETS.rules_m})`);

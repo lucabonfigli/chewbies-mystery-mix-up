@@ -27,7 +27,7 @@
   .mm-frame{
     position:relative; width:100%;
     max-width:{{ section.settings.max_width }}px;
-    aspect-ratio:4/3;
+    aspect-ratio:{{ section.settings.ratio_w }}/{{ section.settings.ratio_h }};
     border:7px solid #fff; border-radius:20px; overflow:hidden;
   }
   .mm-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -43,7 +43,7 @@
 <div class="mm-wrap">
   <div class="mm-frame">
     <iframe id="mm-game-{{ section.id }}"
-            src="{{ section.settings.game_url }}"
+            src="{{ section.settings.game_url }}{% if section.settings.game_url contains '?' %}&{% else %}?{% endif %}bg={{ section.settings.bg_color | remove: '#' }}"
             title="Chewbie's Mystery Mix-Up"
             allow="autoplay; web-share"
             allowfullscreen></iframe>
@@ -52,7 +52,10 @@
 
 <script>
 (function(){
-  var GAME_URL  = {{ section.settings.game_url | json }};
+  // background is passed through so any letterbox inside the frame matches the page
+  var BASE_URL  = {{ section.settings.game_url | json }};
+  var BG        = {{ section.settings.bg_color | json }}.replace("#","");
+  var GAME_URL  = BASE_URL ? BASE_URL + (BASE_URL.indexOf("?") > -1 ? "&" : "?") + "bg=" + BG : "";
   var SITE_KEY  = {{ section.settings.recaptcha_key | json }};
   var frame     = document.getElementById("mm-game-{{ section.id }}");
   if(!frame || !GAME_URL) return;
@@ -122,6 +125,20 @@
       "id": "bg_color",
       "label": "Background colour",
       "default": "#740494"
+    },
+    {
+      "type": "range",
+      "id": "ratio_w",
+      "label": "Frame ratio — width",
+      "min": 1, "max": 21, "step": 1,
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "ratio_h",
+      "label": "Frame ratio — height",
+      "min": 1, "max": 21, "step": 1,
+      "default": 4
     },
     {
       "type": "range",
