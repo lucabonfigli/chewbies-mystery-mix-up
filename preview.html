@@ -5,7 +5,7 @@
 <style>
   /* Mirrors shopify/sections/mystery-mix-game.liquid so the framing can be
      checked against last year's build without a Shopify theme. */
-  :root{ --bg:#740494; --ratio-w:5; --ratio-h:4; --max:1100px }
+  :root{ --bg:#740494; --ratio-w:5; --ratio-h:4; --max:980px; --pct:82% }
   *{box-sizing:border-box}
   body{margin:0;background:#fff;font:14px/1.5 system-ui,-apple-system,sans-serif}
   .bar{background:#fff;border-bottom:1px solid #e6e6e6;padding:14px 24px;display:flex;
@@ -13,8 +13,8 @@
   .bar strong{font-size:15px;letter-spacing:.02em}
   .bar label{font-size:12px;color:#555;display:flex;gap:6px;align-items:center}
   .bar input[type=number]{width:58px}
-  .mm-wrap{display:flex;justify-content:center;background:var(--bg);padding:80px 16px 120px}
-  .mm-frame{position:relative;width:100%;max-width:var(--max);
+  .mm-wrap{display:flex;justify-content:center;background:var(--bg);padding:80px clamp(16px,5vw,64px) 120px}
+  .mm-frame{position:relative;width:min(var(--pct),var(--max));
             aspect-ratio:var(--ratio-w)/var(--ratio-h);
             border:7px solid #fff;border-radius:20px;overflow:hidden}
   .mm-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -27,7 +27,8 @@
   <strong>Embed preview</strong>
   <label>ratio <input type="number" id="rw" value="5" min="1" max="21"> :
     <input type="number" id="rh" value="4" min="1" max="21"></label>
-  <label>max width <input type="number" id="mw" value="1100" min="600" max="1400" step="50">px</label>
+  <label>width % <input type="number" id="wp" value="82" min="40" max="100" step="2"></label>
+  <label>max width <input type="number" id="mw" value="980" min="600" max="1400" step="50">px</label>
   <label>background <input type="color" id="bg" value="#740494"></label>
 </div>
 
@@ -43,13 +44,14 @@
   function sync(){
     const rw=rw_.value, rh=rh_.value, mw=mw_.value, bg=bg_.value;
     R.setProperty("--ratio-w",rw); R.setProperty("--ratio-h",rh);
-    R.setProperty("--max",mw+"px"); R.setProperty("--bg",bg);
-    f.src="index.html?bg="+bg.replace("#","");
+    R.setProperty("--max",mw+"px"); R.setProperty("--pct",wp_.value+"%"); R.setProperty("--bg",bg);
+    f.src="index.html?bg="+bg.replace("#","")+"&cb="+Date.now();
     setTimeout(()=>{const b=document.querySelector(".mm-frame").getBoundingClientRect();
       ro.textContent=`frame ${Math.round(b.width)}×${Math.round(b.height)}  ratio ${(b.width/b.height).toFixed(3)}`;},60);
   }
   const rw_=document.getElementById("rw"),rh_=document.getElementById("rh"),
-        mw_=document.getElementById("mw"),bg_=document.getElementById("bg");
-  [rw_,rh_,mw_,bg_].forEach(el=>el.addEventListener("change",sync));
+        mw_=document.getElementById("mw"),bg_=document.getElementById("bg"),
+        wp_=document.getElementById("wp");
+  [rw_,rh_,mw_,bg_,wp_].forEach(el=>el.addEventListener("change",sync));
   addEventListener("resize",sync); sync();
 </script>

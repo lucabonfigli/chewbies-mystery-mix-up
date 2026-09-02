@@ -4,139 +4,159 @@
   "cx": 1160,
   "cy": 210,
   "r": 58,
-  "color": "#9fd77e"
+  "color": "#9fd77e",
+  "deckIndex": 0
  },
  {
   "idx": 1,
   "cx": 1336,
   "cy": 210,
   "r": 56,
-  "color": "#df6f7b"
+  "color": "#ffd105",
+  "deckIndex": 16
  },
  {
   "idx": 2,
   "cx": 1514,
   "cy": 213,
   "r": 57,
-  "color": "#ffcc3b"
+  "color": "#433a9f",
+  "deckIndex": 6
  },
  {
   "idx": 3,
   "cx": 1692,
   "cy": 213,
   "r": 58,
-  "color": "#fe2529"
+  "color": "#597fed",
+  "deckIndex": 17
  },
  {
   "idx": 4,
   "cx": 1161,
   "cy": 477,
   "r": 56,
-  "color": "#fc6d02"
+  "color": "#fe2529",
+  "deckIndex": 3
  },
  {
   "idx": 5,
   "cx": 1344,
   "cy": 478,
   "r": 57,
-  "color": "#d8325a"
+  "color": "#d8325a",
+  "deckIndex": 5
  },
  {
   "idx": 6,
   "cx": 1525,
   "cy": 478,
   "r": 57,
-  "color": "#433a9f"
+  "color": "#bb7ec3",
+  "deckIndex": 8
  },
  {
   "idx": 7,
   "cx": 1698,
   "cy": 476,
   "r": 57,
-  "color": "#b4eb5c"
+  "color": "#ffabab",
+  "deckIndex": 18
  },
  {
   "idx": 8,
   "cx": 1160,
   "cy": 746,
   "r": 57,
-  "color": "#bb7ec3"
+  "color": "#b4eb5c",
+  "deckIndex": 7
  },
  {
   "idx": 9,
   "cx": 1340,
   "cy": 742,
   "r": 56,
-  "color": "#eb4872"
+  "color": "#b0da3e",
+  "deckIndex": 13
  },
  {
   "idx": 10,
   "cx": 1513,
   "cy": 745,
   "r": 56,
-  "color": "#f4dc04"
+  "color": "#f4dc04",
+  "deckIndex": 10
  },
  {
   "idx": 11,
   "cx": 1694,
   "cy": 743,
   "r": 56,
-  "color": "#9fd67e"
+  "color": "#fe9545",
+  "deckIndex": 19
  },
  {
   "idx": 12,
   "cx": 1164,
   "cy": 1010,
   "r": 56,
-  "color": "#fcae00"
+  "color": "#fcae00",
+  "deckIndex": 12
  },
  {
   "idx": 13,
   "cx": 1343,
   "cy": 1006,
   "r": 55,
-  "color": "#b0da3e"
+  "color": "#fc6d02",
+  "deckIndex": 4
  },
  {
   "idx": 14,
   "cx": 1518,
   "cy": 1007,
   "r": 55,
-  "color": "#ff5374"
+  "color": "#eb4872",
+  "deckIndex": 9
  },
  {
   "idx": 15,
   "cx": 1705,
   "cy": 1010,
   "r": 56,
-  "color": "#cb8dd0"
+  "color": "#ffcc3b",
+  "deckIndex": 2
  },
  {
   "idx": 16,
   "cx": 1163,
   "cy": 1273,
   "r": 54,
-  "color": "#ffd105"
+  "color": "#cb8dd0",
+  "deckIndex": 15
  },
  {
   "idx": 17,
   "cx": 1339,
   "cy": 1274,
   "r": 54,
-  "color": "#597fed"
+  "color": "#df6f7b",
+  "deckIndex": 1
  },
  {
   "idx": 18,
   "cx": 1521,
   "cy": 1275,
   "r": 54,
-  "color": "#ffabab"
+  "color": "#ff5374",
+  "deckIndex": 14
  },
  {
   "idx": 19,
   "cx": 1696,
   "cy": 1275,
   "r": 54,
-  "color": "#fe9545"
+  "color": "#9fd67e",
+  "deckIndex": 11
  }
 ]

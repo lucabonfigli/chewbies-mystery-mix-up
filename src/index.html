@@ -136,6 +136,33 @@ body{
 .btnPill:active{transform:translateY(2px)}
 .btnGhost{background:none;border:2px solid rgba(255,255,255,.6);box-shadow:none;-webkit-text-stroke:0;
   font-size:clamp(12px,1.8cqw,20px);padding:.45em 1.4em;margin-top:.7em}
+.fieldHead{
+  color:#fff;text-align:center;letter-spacing:.06em;
+  font-size:clamp(11px,1.7cqw,19px);padding:.8em 1em;
+  border-bottom:3px solid #ffd23f;background:rgba(255,255,255,.10);
+}
+.fieldHead sup{color:#ffd23f}
+.legal{
+  color:rgba(255,255,255,.85);text-align:center;line-height:1.35;
+  font-size:clamp(8px,1.05cqw,12px);margin:1.2em 0 0;
+}
+.legal a{color:#ffd23f}
+/* BACK sits bottom-left over the scene, as in the 2025 build */
+.backBtn{
+  position:absolute;left:3%;bottom:4%;z-index:6;display:none;
+  align-items:center;gap:.45em;cursor:pointer;font-family:inherit;
+  color:#fff;background:rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.75);
+  border-radius:999px;padding:.5em 1.3em;letter-spacing:.06em;
+  font-size:clamp(11px,1.5vmin,20px);
+}
+.backBtn.on{display:inline-flex}
+.backBtn:hover{background:rgba(0,0,0,.55)}
+/* disclaimer pinned to the bottom of the letterboxed rules plate */
+.plateLegal{
+  position:absolute;z-index:4;text-align:center;color:rgba(255,255,255,.9);
+  line-height:1.3;pointer-events:auto;
+}
+.plateLegal a{color:#ffd23f}
 
 /* portrait: the form takes the whole stage, as on the mobile comp */
 @media (max-aspect-ratio:1/1){
@@ -179,6 +206,7 @@ body{
 
   <div class="screen plate" id="s-rules">
     <button class="hotspot" id="btn-start" aria-label="Happy mixing — start the game"></button>
+    <p class="plateLegal" id="rulesLegal"></p>
   </div>
 
   <div class="screen" id="s-game">
@@ -197,6 +225,7 @@ body{
         </div>
       </div>
       <div class="formPanel" id="formPanel"></div>
+      <button class="backBtn" id="btn-back" type="button">&#9664; BACK</button>
     </div>
   </div>
 
@@ -222,11 +251,11 @@ const ASSETS = __ASSETS__;
    e.g.  8: { mixWith: { 10: "#c9d94a" } }
    ===================================================================== */
 const FLAVOURS = [
-  { name:"Green Apple"    }, { name:"Strawberry"    }, { name:"Pineapple"     }, { name:"Candy Apple" },
-  { name:"Orange"         }, { name:"Cherry"        }, { name:"Blue Raspberry"}, { name:"Key Lime Pie" },
-  { name:"Grape"          }, { name:"Peach"         }, { name:"Lemon"         }, { name:"Lemon Lime"  },
-  { name:"Mango"          }, { name:"Kiwi"          }, { name:"Watermelon"    }, { name:"Ube Ice Cream" },
-  { name:"Banana"         }, { name:"Blueberry"     }, { name:"Pink Grapefruit"},{ name:"Piña Colada" }
+  { name:"Green Apple"  }, { name:"Banana"     }, { name:"Blue Raspberry" }, { name:"Blueberry"  },
+  { name:"Candy Apple"  }, { name:"Cherry"     }, { name:"Grape"          }, { name:"Pink Grapefruit" },
+  { name:"Key Lime Pie" }, { name:"Kiwi"       }, { name:"Lemon"          }, { name:"Piña Colada" },
+  { name:"Mango"        }, { name:"Orange"     }, { name:"Peach"          }, { name:"Pineapple"  },
+  { name:"Ube Ice Cream"}, { name:"Strawberry" }, { name:"Watermelon"     }, { name:"Lemon Lime" }
 ];
 const DISCS = __DISCS__;             // geometry + colour lifted from the comp
 DISCS.forEach((d,i)=>{ FLAVOURS[i].color = d.color; FLAVOURS[i].geo = d; });
@@ -250,6 +279,12 @@ const CFG = Object.assign({
   waitForHost  : false,   // true = hold the confirmation until the host acks
   recaptcha    : false,   // true = ask the host for a v3 token before submitting
   recaptchaMs  : 8000,    // give up waiting for the token after this
+  // Placeholder until HI-CHEW legal supply this year's dates and rules URL.
+  // 2025 ran 09/08–10/30 at hi-chew.com/houseofmystery.
+  rulesUrl     : "#",
+  legal        : "*NO PURCHASE NECESSARY. Void where prohibited. Open to legal "
+               + "residents of the 50 U.S. & D.C., 18+ years or older. Sweepstakes "
+               + "begins [START] and ends [END]. Subject to Official Rules.",
   flavours     : null     // [{name, mixWith}] by index, overrides the defaults
 }, window.MYSTERY_MIX_CONFIG || {});
 
@@ -539,46 +574,43 @@ function buildForm(){
     <p class="formSub">Fill out your info for a chance to win!</p>
     <form id="entryForm" novalidate>
       <div class="fields">
-        <div><input id="f-name"  name="name"  placeholder="Name" autocomplete="name" required></div>
-        <div><input id="f-email" name="email" placeholder="Email address" type="email"
+        <div class="fieldHead">SIGN UP FOR OUR NEWSLETTER<sup>*</sup></div>
+        <div><input id="f-first" name="firstName" placeholder="First Name"
+                    autocomplete="given-name" required></div>
+        <div><input id="f-last"  name="lastName"  placeholder="Last Name"
+                    autocomplete="family-name" required></div>
+        <div><input id="f-email" name="email" placeholder="Email Address" type="email"
                     autocomplete="email" inputmode="email" required></div>
         <div>
           <select id="f-fav" name="favourite" required>
-            <option value="">FAVOURITE FLAVOUR</option>
-            ${FLAVOURS.map((f,i)=>`<option value="${f.name}">${f.name}</option>`).join("")}
+            <option value="">FAVORITE FLAVOR</option>
+            ${FLAVOURS.map(f=>`<option value="${f.name}">${f.name}</option>`).join("")}
           </select>
         </div>
       </div>
-      <label class="consent">
-        <input type="checkbox" id="f-optin" name="optin">
-        <span>Yes, sign me up for the HI-CHEW newsletter. (Optional &mdash; you can still enter without it.)</span>
-      </label>
-      <label class="consent">
-        <input type="checkbox" id="f-age" name="age" required>
-        <span>I'm 18 or older and I accept the <a href="#" onclick="return false">Official Rules</a>. <em>Required.</em></span>
-      </label>
       <p class="err" id="formErr" role="alert"></p>
       <button class="btnPill" type="submit">SUBMIT</button>
-      <button class="btnPill btnGhost" type="button" id="btn-back">BACK TO MY MIX</button>
+      <p class="legal">${CFG.legal.replace(/Official Rules/,
+        `<a href="${CFG.rulesUrl}" target="_blank" rel="noopener">Official Rules</a>`)}</p>
     </form>`;
   $("#entryForm").addEventListener("submit",onSubmit);
-  $("#btn-back").addEventListener("click",()=>{ $("#formPanel").classList.remove("open"); });
 }
 
 function onSubmit(e){
   e.preventDefault();
-  const name=$("#f-name").value.trim(), email=$("#f-email").value.trim(),
-        fav=$("#f-fav").value, age=$("#f-age").checked;
+  const first=$("#f-first").value.trim(), last=$("#f-last").value.trim(),
+        email=$("#f-email").value.trim(), fav=$("#f-fav").value;
   const err=$("#formErr");
-  if(!name)                       return err.textContent="Chewbie needs a name!";
+  if(!first)                      return err.textContent="Chewbie needs a first name!";
+  if(!last)                       return err.textContent="And a last name!";
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email))
                                   return err.textContent="That email doesn't look right.";
-  if(!fav)                        return err.textContent="Pick your favourite flavour.";
-  if(!age)                        return err.textContent="Please confirm your age and accept the rules.";
+  if(!fav)                        return err.textContent="Pick your favorite flavor.";
   err.textContent="";
   const entry = {
-    name, email, favourite:fav,
-    optIn:$("#f-optin").checked,
+    firstName:first, lastName:last, email, favourite:fav,
+    // the field header states the signup, as it did in 2025 — see note in the spec
+    optIn:true,
     guess:[FLAVOURS[state.picks[0]].name, FLAVOURS[state.picks[1]].name],
     guessIndexes:[state.picks[0], state.picks[1]],
     mixColour:mixFlavours(state.picks[0],state.picks[1]),
@@ -607,7 +639,7 @@ function finishSubmit(entry, token){
 }
 
 function setPending(on){
-  const b=document.querySelector("#entryForm .btnPill");
+  const b=document.querySelector("#entryForm .btnPill"); if(!b) return;
   b.disabled=on; b.textContent = on ? "SENDING…" : "SUBMIT";
   b.style.opacity = on ? ".6" : "1";
 }
@@ -636,6 +668,11 @@ function submitMix(){
   if(state.picks.length!==2) return;
   if(!state.mixed){ state.mixed=true; sfxBubble(); }
   $("#formPanel").classList.add("open");
+  $("#btn-back").classList.add("on");
+}
+function closeForm(){
+  $("#formPanel").classList.remove("open");
+  $("#btn-back").classList.remove("on");
 }
 function showDone(){
   sfxWin();
@@ -647,7 +684,7 @@ function showDone(){
 }
 function reset(){
   state.picks=[]; state.mixed=false;
-  $("#formPanel").classList.remove("open");
+  closeForm();
   $("#entryForm").reset(); $("#formErr").textContent=""; setPending(false);
   render(); show("s-game"); emit("restart");
 }
@@ -665,6 +702,11 @@ function placeHotspots(){
   const vw=innerWidth, vh=innerHeight;
   let w=vw, h=vw/ar; if(h>vh){ h=vh; w=vh*ar; }
   const ox=(vw-w)/2, oy=(vh-h)/2;
+  const legal=document.getElementById("rulesLegal");
+  legal.style.left  = (ox + .10*w) + "px";
+  legal.style.width = (.80*w) + "px";
+  legal.style.top   = (oy + (portrait ? .935 : .945)*h) + "px";
+  legal.style.fontSize = Math.max(7, Math.round(h*(portrait?.0115:.0135))) + "px";
   for(const [id,cfg] of Object.entries(HOTSPOTS)){
     const [l,t,bw,bh]=portrait?cfg.m:cfg.d, el=document.getElementById(id);
     el.style.left=(ox+l*w)+"px"; el.style.top=(oy+t*h)+"px";
@@ -680,11 +722,15 @@ function init(){
   R.setProperty("--done-d", `url(${ASSETS.done_d})`);  R.setProperty("--done-m", `url(${ASSETS.done_m})`);
   $("#img-scene").src=ASSETS.scene; $("#img-shelf").src=ASSETS.shelf;
 
-  buildShelf(); buildScene(); buildForm(); render(); placeHotspots();
+  buildShelf(); buildScene(); buildForm(); render();
+  $("#rulesLegal").innerHTML = CFG.legal.replace(/Official Rules/,
+    `<a href="${CFG.rulesUrl}" target="_blank" rel="noopener">Official Rules</a>`);
+  placeHotspots();
 
   $("#btn-play").addEventListener("click",()=>{ ac().resume(); tone(660,.2,"triangle"); show("s-rules"); });
   $("#btn-start").addEventListener("click",()=>{ tone(880,.2,"triangle"); show("s-game"); });
   $("#btn-again").addEventListener("click",reset);
+  $("#btn-back").addEventListener("click",closeForm);
   $("#mute").addEventListener("click",e=>{
     muted=!muted; e.currentTarget.textContent = muted ? "✕" : "♫";
     e.currentTarget.setAttribute("aria-label", muted ? "Unmute sound" : "Mute sound");

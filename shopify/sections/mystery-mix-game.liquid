@@ -22,11 +22,11 @@
   .mm-wrap{
     display:flex; justify-content:center;
     background:{{ section.settings.bg_color }};
-    padding:{{ section.settings.pad_top }}px 16px {{ section.settings.pad_bottom }}px;
+    padding:{{ section.settings.pad_top }}px clamp(16px,5vw,64px) {{ section.settings.pad_bottom }}px;
   }
   .mm-frame{
-    position:relative; width:100%;
-    max-width:{{ section.settings.max_width }}px;
+    position:relative;
+    width:min({{ section.settings.width_pct }}%, {{ section.settings.max_width }}px);
     aspect-ratio:{{ section.settings.ratio_w }}/{{ section.settings.ratio_h }};
     border:7px solid #fff; border-radius:20px; overflow:hidden;
   }
@@ -142,10 +142,17 @@
     },
     {
       "type": "range",
+      "id": "width_pct",
+      "label": "Width of the page",
+      "min": 40, "max": 100, "step": 2, "unit": "%",
+      "default": 82
+    },
+    {
+      "type": "range",
       "id": "max_width",
       "label": "Maximum game width",
       "min": 600, "max": 1400, "step": 50, "unit": "px",
-      "default": 1100
+      "default": 980
     },
     {
       "type": "range",
