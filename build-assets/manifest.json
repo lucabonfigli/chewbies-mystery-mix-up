@@ -1,0 +1,215 @@
+{
+ "canvas": [
+  2880,
+  2160
+ ],
+ "overlay": {
+  "title-btn": {
+   "x": 895,
+   "y": 1774,
+   "w": 1090,
+   "h": 235
+  },
+  "title-btn-ro": {
+   "x": 859,
+   "y": 1739,
+   "w": 1159,
+   "h": 305
+  },
+  "lever-pulled": {
+   "x": 1941,
+   "y": 1564,
+   "w": 160,
+   "h": 141
+  },
+  "ig": {
+   "x": 1689,
+   "y": 1851,
+   "w": 309,
+   "h": 65
+  },
+  "tiktok": {
+   "x": 2131,
+   "y": 1846,
+   "w": 207,
+   "h": 59
+  }
+ },
+ "sprite": {
+  "lever": [
+   293,
+   252
+  ],
+  "s2-submit": [
+   648,
+   346
+  ],
+  "s2-submit-ro": [
+   648,
+   346
+  ],
+  "s2-back": [
+   376,
+   252
+  ],
+  "s2-back-ro": [
+   376,
+   252
+  ],
+  "s3-submit": [
+   648,
+   346
+  ],
+  "s3-submit-ro": [
+   648,
+   346
+  ],
+  "s3-back": [
+   376,
+   252
+  ],
+  "s3-back-ro": [
+   376,
+   252
+  ]
+ },
+ "flavours": [
+  {
+   "key": "BlackCherry",
+   "name": "Black Cherry",
+   "w": 256,
+   "h": 338
+  },
+  {
+   "key": "BlueRaspberry",
+   "name": "Blue Raspberry",
+   "w": 324,
+   "h": 355
+  },
+  {
+   "key": "Blueberry",
+   "name": "Blueberry",
+   "w": 299,
+   "h": 356
+  },
+  {
+   "key": "CandyApple",
+   "name": "Candy Apple",
+   "w": 258,
+   "h": 411
+  },
+  {
+   "key": "Cola",
+   "name": "Cola",
+   "w": 221,
+   "h": 358
+  },
+  {
+   "key": "CottonCandy",
+   "name": "Cotton Candy",
+   "w": 257,
+   "h": 315
+  },
+  {
+   "key": "Grapefruit",
+   "name": "Grapefruit",
+   "w": 294,
+   "h": 347
+  },
+  {
+   "key": "GreenApple",
+   "name": "Green Apple",
+   "w": 253,
+   "h": 358
+  },
+  {
+   "key": "JuicyBloodOrange",
+   "name": "Juicy Blood Orange",
+   "w": 286,
+   "h": 412
+  },
+  {
+   "key": "JuicyStrawberry",
+   "name": "Juicy Strawberry",
+   "w": 364,
+   "h": 370
+  },
+  {
+   "key": "KeyLimePie",
+   "name": "Key Lime Pie",
+   "w": 245,
+   "h": 382
+  },
+  {
+   "key": "LycheeRaspberry",
+   "name": "Lychee Raspberry",
+   "w": 332,
+   "h": 348
+  },
+  {
+   "key": "Mango",
+   "name": "Mango",
+   "w": 299,
+   "h": 364
+  },
+  {
+   "key": "Peach",
+   "name": "Peach",
+   "w": 249,
+   "h": 358
+  },
+  {
+   "key": "PinaColada",
+   "name": "Pi\u00f1a Colada",
+   "w": 253,
+   "h": 358
+  },
+  {
+   "key": "Pineapple",
+   "name": "Pineapple",
+   "w": 305,
+   "h": 369
+  },
+  {
+   "key": "RainbowSherbet",
+   "name": "Rainbow Sherbet",
+   "w": 291,
+   "h": 338
+  },
+  {
+   "key": "StrawberryLemonade",
+   "name": "Strawberry Lemonade",
+   "w": 365,
+   "h": 371
+  },
+  {
+   "key": "Watermelon",
+   "name": "Watermelon",
+   "w": 332,
+   "h": 348
+  },
+  {
+   "key": "YuzuLime",
+   "name": "Yuzu Lime",
+   "w": 252,
+   "h": 358
+  }
+ ],
+ "panel": {
+  "x": 1264,
+  "y": 138,
+  "w": 1502,
+  "h": 1296
+ },
+ "fieldBox": {
+  "x": 1399,
+  "w": 1322,
+  "tops": [
+   902,
+   1070,
+   1239,
+   1407
+  ],
+  "h": 157
+ }
+}

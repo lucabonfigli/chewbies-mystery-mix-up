@@ -3,15 +3,15 @@
 import base64, json, pathlib, re
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SRC  = ROOT / "src" / "index.html"
-ASS  = ROOT / "assets"
-OUT  = ROOT / "index.html"          # served directly by GitHub Pages
+SRC  = ROOT / "legacy" / "src" / "index.html"
+ASS  = ROOT / "legacy" / "assets"
+OUT  = ROOT / "legacy" / "deck-build.html"   # superseded by the Sep-08 asset drop
 
 assets = {}
 for p in sorted(ASS.glob("*.webp")):
     assets[p.stem] = "data:image/webp;base64," + base64.b64encode(p.read_bytes()).decode()
 
-discs = json.loads((ROOT / "src" / "discs.json").read_text())
+discs = json.loads((ROOT / "legacy" / "src" / "discs.json").read_text())
 
 html = SRC.read_text()
 html = html.replace("__ASSETS__", json.dumps(assets))

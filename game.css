@@ -1,0 +1,108 @@
+/* Franken Chewbie's Flavor Mash
+   Every position is a percentage of the artwork's 2880x2160 canvas, so the
+   whole game scales as one piece and the placeholder art can be swapped for
+   final art without moving anything. */
+
+:root{
+  --page:#2a0b4e;
+  --ui:"Baloo 2","Arial Rounded MT Bold","Helvetica Rounded",system-ui,sans-serif;
+  --lift:1.09;                       /* "grow slightly larger" on hover/select */
+  --ease:cubic-bezier(.34,1.5,.5,1);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--page);font-family:var(--ui);overflow:hidden;-webkit-font-smoothing:antialiased}
+
+#app{
+  position:relative;overflow:hidden;
+  width:min(100vw, calc(100vh * 4 / 3));
+  height:min(100vh, calc(100vw * 3 / 4));
+  margin:auto;
+}
+html,body{display:flex;align-items:center;justify-content:center}
+
+.screen{
+  position:absolute;inset:0;display:none;opacity:0;
+  background-repeat:no-repeat;background-position:center;background-size:100% 100%;
+  transition:opacity .3s ease;
+}
+.screen.on{display:block;opacity:1}
+
+/* ---------- overlay buttons: art already knows where it sits ---------- */
+.ovBtn{
+  position:absolute;border:0;padding:0;cursor:pointer;background:transparent;
+  background-repeat:no-repeat;background-size:100% 100%;
+  transition:transform .18s var(--ease);transform-origin:center;
+}
+.ovBtn:hover,.ovBtn:focus-visible{transform:scale(var(--lift))}
+.ovBtn:focus-visible{outline:3px solid #fff;outline-offset:6px;border-radius:8px}
+.ovBtn:active{transform:scale(1.03)}
+
+/* ---------- loose sprite buttons ---------- */
+.spriteBtn{
+  position:absolute;border:0;padding:0;cursor:pointer;background:transparent;
+  background-repeat:no-repeat;background-size:100% 100%;
+  transition:transform .18s var(--ease);transform-origin:center;
+}
+.spriteBtn:hover,.spriteBtn:focus-visible{transform:scale(var(--lift))}
+.spriteBtn:focus-visible{outline:3px solid #fff;outline-offset:6px;border-radius:8px}
+.spriteBtn[disabled]{cursor:default;filter:grayscale(.5) brightness(.75);transform:none}
+
+/* ---------- the flavour panel ---------- */
+.panel{position:absolute;display:grid;gap:0}
+.cell{position:relative;display:flex;align-items:flex-end;justify-content:center;padding:4% 3%}
+.choice{
+  border:0;padding:0;background:transparent;cursor:pointer;
+  width:100%;height:100%;
+  background-repeat:no-repeat;background-position:center bottom;background-size:contain;
+  transition:transform .2s var(--ease),filter .2s ease;
+  transform-origin:center bottom;
+}
+.choice:hover,.choice:focus-visible{transform:scale(var(--lift))}
+.choice:focus-visible{outline:3px solid #fff;outline-offset:4px;border-radius:10px}
+.choice.sel{transform:scale(var(--lift))}
+.choice.dim{filter:brightness(.62) saturate(.7)}
+
+/* ---------- the lever ---------- */
+.lever{
+  position:absolute;border:0;padding:0;background:transparent;cursor:default;
+  background-repeat:no-repeat;background-size:100% 100%;background-position:bottom center;
+  transform-origin:50% 92%;
+  transition:transform .22s var(--ease),filter .2s ease;
+  filter:grayscale(.55) brightness(.8);
+}
+.lever.ready{cursor:pointer;filter:none;animation:leverHint 1.8s ease-in-out infinite}
+.lever.ready:hover,.lever.ready:focus-visible{transform:rotate(6deg) scale(1.04)}
+.lever.pulled{transform:rotate(22deg) scale(.98);animation:none}
+.lever:focus-visible{outline:3px solid #fff;outline-offset:6px;border-radius:8px}
+@keyframes leverHint{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg)}}
+
+/* ---------- form ---------- */
+#entryForm{position:absolute;inset:0}
+#entryForm input{
+  position:absolute;border:0;background:transparent;outline:none;
+  font-family:inherit;color:#eafce0;letter-spacing:.02em;
+  padding:0 1.4%;
+}
+#entryForm input::placeholder{color:rgba(215,255,190,.55)}
+#entryForm input:focus{background:rgba(160,255,120,.10)}
+.err{
+  position:absolute;text-align:center;margin:0;color:#ffd23f;
+  text-shadow:0 2px 6px rgba(0,0,0,.6);
+}
+.legal{
+  position:absolute;text-align:center;margin:0;line-height:1.35;
+  color:rgba(255,255,255,.82);
+}
+.legal a{color:#9cf06a}
+
+/* ---------- chrome ---------- */
+.mute{
+  position:absolute;right:1.2%;top:1.6%;z-index:20;
+  width:3.4%;aspect-ratio:1;border-radius:50%;
+  border:2px solid rgba(255,255,255,.45);background:rgba(0,0,0,.35);color:#fff;
+  cursor:pointer;font-size:min(2vh,17px);line-height:1;display:grid;place-items:center;
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001s!important;transition-duration:.001s!important}
+}
