@@ -5,6 +5,7 @@
 
 :root{
   --page:#2a0b4e;
+  --cw:2880; --ch:2160;
   --ui:"Baloo 2","Arial Rounded MT Bold","Helvetica Rounded",system-ui,sans-serif;
   --lift:1.09;                       /* "grow slightly larger" on hover/select */
   --ease:cubic-bezier(.34,1.5,.5,1);
@@ -13,23 +14,20 @@
 html,body{height:100%;margin:0}
 body{background:var(--page);font-family:var(--ui);overflow:hidden;-webkit-font-smoothing:antialiased}
 
-/* The artwork is 4:3. The Shopify frame is 1100x866 (1.270), so "contain"
-   would letterbox with bands of page purple top and bottom. Near-landscape
-   frames therefore COVER — 4:3 into 1.270 crops about 2.4% horizontally,
-   which is nothing. Portrait frames stay contained, because covering there
-   would throw away most of the picture. */
+/* The canvas aspect comes from the active layout (desktop 4:3, mobile 9:16).
+   When the frame is close to the canvas we COVER, so no page colour shows
+   through; when it is far off we CONTAIN, because covering would throw away
+   most of the picture. JS decides and sets .cover. */
 html,body{overflow:hidden}
 #app{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   overflow:hidden;
-  width:min(100vw, calc(100vh * 4 / 3));
-  height:min(100vh, calc(100vw * 3 / 4));
+  width:min(100vw, calc(100vh * var(--cw) / var(--ch)));
+  height:min(100vh, calc(100vw * var(--ch) / var(--cw)));
 }
-@media (min-aspect-ratio:11/10) and (max-aspect-ratio:8/5){
-  #app{
-    width:max(100vw, calc(100vh * 4 / 3));
-    height:max(100vh, calc(100vw * 3 / 4));
-  }
+body.cover #app{
+  width:max(100vw, calc(100vh * var(--cw) / var(--ch)));
+  height:max(100vh, calc(100vw * var(--ch) / var(--cw)));
 }
 
 .screen{
@@ -63,15 +61,20 @@ html,body{overflow:hidden}
 .panel{position:absolute;display:grid;gap:0}
 .cell{position:relative;display:flex;align-items:flex-end;justify-content:center;padding:4% 3%}
 .choice{
+  --tilt:0deg;               /* per-tube base angle, set per layout */
+  --pick:0deg;               /* extra tilt while selected */
+  --scale:1;
   border:0;padding:0;background:transparent;cursor:pointer;
   width:100%;height:100%;
   background-repeat:no-repeat;background-position:center bottom;background-size:contain;
-  transition:transform .2s var(--ease),filter .2s ease;
+  transition:transform .22s var(--ease),filter .2s ease;
   transform-origin:center bottom;
+  transform:rotate(calc(var(--tilt) + var(--pick))) scale(var(--scale));
 }
-.choice:hover,.choice:focus-visible{transform:scale(var(--lift))}
+.choice:hover,.choice:focus-visible{--scale:var(--lift)}
 .choice:focus-visible{outline:3px solid #fff;outline-offset:4px;border-radius:10px}
-.choice.sel{transform:scale(var(--lift))}
+/* selected: grows and tilts a little further, per Dave's mock */
+.choice.sel{--scale:var(--lift)}
 .choice.dim{filter:brightness(.62) saturate(.7)}
 
 /* ---------- the lever: an indicator, not a control ----------

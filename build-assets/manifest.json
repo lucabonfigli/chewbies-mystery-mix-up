@@ -33,6 +33,18 @@
    "y": 1846,
    "w": 207,
    "h": 59
+  },
+  "m-ig": {
+   "x": 509,
+   "y": 1718,
+   "w": 231,
+   "h": 49
+  },
+  "m-tiktok": {
+   "x": 839,
+   "y": 1715,
+   "w": 154,
+   "h": 44
   }
  },
  "sprite": {
@@ -211,5 +223,166 @@
    1407
   ],
   "h": 157
+ },
+ "layouts": {
+  "desktop": {
+   "canvas": [
+    2880,
+    2160
+   ],
+   "grid": [
+    5,
+    4
+   ],
+   "bg": {
+    "title": "bg-title",
+    "game": "bg-game",
+    "game-live": "bg-game-live",
+    "form": "bg-form",
+    "done": "bg-done"
+   },
+   "panel": {
+    "x": 1264,
+    "y": 138,
+    "w": 1502,
+    "h": 1296
+   },
+   "fieldBox": {
+    "x": 1399,
+    "w": 1322,
+    "tops": [
+     902,
+     1070,
+     1239,
+     1407
+    ],
+    "h": 157
+   },
+   "titleBtn": {
+    "overlay": "title-btn",
+    "ro": "title-btn-ro"
+   },
+   "social": {
+    "ig": {
+     "overlay": "ig"
+    },
+    "tiktok": {
+     "overlay": "tiktok"
+    }
+   },
+   "dome": {
+    "x": 1941,
+    "y": 1564,
+    "w": 160,
+    "h": 141,
+    "art": "lever-pulled"
+   },
+   "arm": {
+    "w": 293,
+    "h": 252
+   },
+   "sprites": {
+    "s2-submit": {
+     "cx": 2021,
+     "cy": 1920
+    },
+    "s2-back": {
+     "cx": 300,
+     "cy": 2010
+    },
+    "f-submit": {
+     "cx": 2060,
+     "cy": 1750
+    },
+    "f-back": {
+     "cx": 1560,
+     "cy": 1750
+    }
+   },
+   "scatter": false
+  },
+  "mobile": {
+   "canvas": [
+    1080,
+    1920
+   ],
+   "grid": [
+    4,
+    5
+   ],
+   "bg": {
+    "title": "m-bg-title",
+    "game": "m-bg-game",
+    "game-live": "m-bg-game-live",
+    "form": "m-bg-form",
+    "done": "m-bg-done"
+   },
+   "panel": {
+    "x": 75,
+    "y": 395,
+    "w": 935,
+    "h": 915
+   },
+   "fieldBox": {
+    "x": 121,
+    "w": 837,
+    "tops": [
+     869,
+     1002,
+     1134,
+     1266
+    ],
+    "h": 124
+   },
+   "titleBtn": {
+    "overlay": "title-btn",
+    "ro": "title-btn-ro",
+    "cx": 540,
+    "cy": 1700,
+    "w": 756
+   },
+   "social": {
+    "ig": {
+     "overlay": "m-ig"
+    },
+    "tiktok": {
+     "overlay": "m-tiktok"
+    }
+   },
+   "dome": {
+    "x": 415,
+    "y": 1305,
+    "w": 255,
+    "h": 145,
+    "art": null
+   },
+   "arm": {
+    "w": 467,
+    "h": 402
+   },
+   "sprites": {
+    "s2-submit": {
+     "cx": 542,
+     "cy": 1600,
+     "w": 465
+    },
+    "s2-back": {
+     "cx": 542,
+     "cy": 1795,
+     "w": 190
+    },
+    "f-submit": {
+     "cx": 540,
+     "cy": 1560,
+     "w": 420
+    },
+    "f-back": {
+     "cx": 540,
+     "cy": 1745,
+     "w": 180
+    }
+   },
+   "scatter": true
+  }
  }
 }

@@ -11,7 +11,6 @@
 
   const A   = "build-assets/";
   const MAN = await fetch(A + "manifest.json").then(r => r.json());
-  const [CW, CH] = MAN.canvas;
   const pct = (v, total) => (v / total * 100) + "%";
 
   const QS  = new URLSearchParams(location.search);
@@ -63,110 +62,155 @@
     Object.assign({}, f, (CFG.flavours && CFG.flavours[i]) || {}));
   const state = { picks: [], sent: false };
 
-  /* ------------------------------------------------------- backgrounds */
-  $$(".screen").forEach(s => {
-    s.style.backgroundImage = `url(${A}${s.dataset.bg}.webp)`;
-  });
-
-  /* ------------------------------------- overlay buttons (pre-placed art) */
-  function placeOverlay(el, name, roName) {
-    const o = MAN.overlay[name];
-    el.style.left   = pct(o.x, CW);
-    el.style.top    = pct(o.y, CH);
-    el.style.width  = pct(o.w, CW);
-    el.style.height = pct(o.h, CH);
-    el.style.backgroundImage = `url(${A}${name}.webp)`;
-    if (roName) {
-      const ro = new Image(); ro.src = A + roName + ".webp";      // preload
-      el.addEventListener("pointerenter", () => el.style.backgroundImage = `url(${A}${roName}.webp)`);
-      el.addEventListener("pointerleave", () => el.style.backgroundImage = `url(${A}${name}.webp)`);
-      el.addEventListener("focus",  () => el.style.backgroundImage = `url(${A}${roName}.webp)`);
-      el.addEventListener("blur",   () => el.style.backgroundImage = `url(${A}${name}.webp)`);
-    }
-  }
-  placeOverlay($("#btn-play"), "title-btn", "title-btn-ro");
-  placeOverlay($("#lnk-ig"),   "ig");
-  placeOverlay($("#lnk-tt"),   "tiktok");
-  $("#lnk-ig").href = CFG.instagram;
-  $("#lnk-tt").href = CFG.tiktok;
-
-  /* ------------------------------------------- loose sprite buttons */
-  // measured against the 2880x2160 canvas
-  const SPRITE_POS = {
-    "s2-submit": { cx: 2380, cy: 1900 },
-    "s2-back":   { cx: 300,  cy: 2010 },
-    "f-submit":  { cx: 2060, cy: 1750 },
-    "f-back":    { cx: 1560, cy: 1750 }
-  };
-  function placeSprite(el, base, ro, pos) {
-    const [w, h] = MAN.sprite[base];
-    el.style.width  = pct(w, CW);
-    el.style.height = pct(h, CH);
-    el.style.left   = pct(pos.cx - w / 2, CW);
-    el.style.top    = pct(pos.cy - h / 2, CH);
-    el.style.backgroundImage = `url(${A}${base}.webp)`;
-    if (ro) {
-      const p = new Image(); p.src = A + ro + ".webp";
-      const on  = () => { if (!el.disabled) el.style.backgroundImage = `url(${A}${ro}.webp)`; };
-      const off = () => el.style.backgroundImage = `url(${A}${base}.webp)`;
-      el.addEventListener("pointerenter", on); el.addEventListener("pointerleave", off);
-      el.addEventListener("focus", on);        el.addEventListener("blur", off);
-    }
-  }
-  placeSprite($("#s2-submit"), "s2-submit", "s2-submit-ro", SPRITE_POS["s2-submit"]);
-  placeSprite($("#s2-back"),   "s2-back",   "s2-back-ro",   SPRITE_POS["s2-back"]);
-  placeSprite($("#f-submit"), "s3-submit", "s3-submit-ro", SPRITE_POS["f-submit"]);
-  placeSprite($("#f-back"),   "s3-back",   "s3-back-ro",   SPRITE_POS["f-back"]);
-
-  /* ------------------------------------------------------------- lever
-     Per Dave: left with nothing picked, middle at one, hard right at two —
-     and at two the background switches to the electrified plate.
-     The arm art is drawn ~50deg left of vertical, so 0deg IS "all the way
-     left"; +50 is upright and +100 is all the way right. The dome overlay
-     covers the pivot, so the arm rotates behind it. */
-  const LEVER_ANGLE = [0, 50, 100];
-  const dome = MAN.overlay["lever-pulled"];
-  const [lw, lh] = MAN.sprite["lever"];
-  const PIVOT = { x: 290, y: 245 };                  // shaft tip in sprite px
-  const hinge = { x: dome.x + dome.w / 2, y: dome.y + dome.h };
-
-  const arm = $("#leverArm");
-  arm.style.width  = pct(lw, CW);
-  arm.style.height = pct(lh, CH);
-  arm.style.left   = pct(hinge.x - PIVOT.x, CW);
-  arm.style.top    = pct(hinge.y - PIVOT.y, CH);
-  arm.style.transformOrigin = (PIVOT.x / lw * 100) + "% " + (PIVOT.y / lh * 100) + "%";
-  arm.style.backgroundImage = `url(${A}lever.webp)`;
-
-  const domeEl = $("#leverDome");
-  domeEl.style.left   = pct(dome.x, CW);
-  domeEl.style.top    = pct(dome.y, CH);
-  domeEl.style.width  = pct(dome.w, CW);
-  domeEl.style.height = pct(dome.h, CH);
-  domeEl.style.backgroundImage = `url(${A}lever-pulled.webp)`;
-
-  /* ------------------------------------------------------------- panel */
-  const P = MAN.panel, COLS = 5, ROWS = 4;
   const panel = $("#panel");
-  panel.style.left = pct(P.x, CW);
-  panel.style.top  = pct(P.y, CH);
-  panel.style.width  = pct(P.w, CW);
-  panel.style.height = pct(P.h, CH);
-  panel.style.gridTemplateColumns = `repeat(${COLS},1fr)`;
-  panel.style.gridTemplateRows    = `repeat(${ROWS},1fr)`;
+
+  /* --------------------------------------------------------- layout
+     Two coordinate spaces: desktop artwork is 2880x2160, mobile is 1080x1920.
+     Everything below is expressed as a percentage of whichever is active, so
+     one set of DOM nodes serves both. Re-runs on orientation change. */
+  const MOBILE = matchMedia("(max-aspect-ratio: 1/1)");
+  let L, CW, CH;
+
+  // deterministic per-flavour scatter, so the arrangement is stable between loads
+  const rnd = (i, salt) => { const x = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453; return x - Math.floor(x); };
+
+  function applyLayout() {
+    L  = MAN.layouts[MOBILE.matches ? "mobile" : "desktop"];
+    [CW, CH] = L.canvas;
+    document.body.dataset.layout = MOBILE.matches ? "mobile" : "desktop";
+    const R = document.documentElement.style;
+    R.setProperty("--cw", CW); R.setProperty("--ch", CH);
+    fitCanvas();
+
+    $$(".screen").forEach(sc => {
+      sc.style.backgroundImage = `url(${A}${L.bg[sc.dataset.bg]}.webp)`;
+    });
+
+    // title button: a placed overlay on desktop, a sized sprite on mobile
+    const tb = L.titleBtn, o = MAN.overlay[tb.overlay], btn = $("#btn-play");
+    const tw = tb.w || o.w, th = tw * o.h / o.w;
+    btn.style.width  = pct(tw, CW);
+    btn.style.height = pct(th, CH);
+    btn.style.left   = pct(tb.cx != null ? tb.cx - tw / 2 : o.x, CW);
+    btn.style.top    = pct(tb.cy != null ? tb.cy - th / 2 : o.y, CH);
+    swapOnHover(btn, tb.overlay, tb.ro);
+
+    for (const [id, key] of [["#lnk-ig", "ig"], ["#lnk-tt", "tiktok"]]) {
+      const ov = MAN.overlay[L.social[key].overlay], el = $(id);
+      el.style.left = pct(ov.x, CW); el.style.top = pct(ov.y, CH);
+      el.style.width = pct(ov.w, CW); el.style.height = pct(ov.h, CH);
+      el.style.backgroundImage = `url(${A}${L.social[key].overlay}.webp)`;
+    }
+
+    for (const [id, base, ro] of [["#s2-submit","s2-submit","s2-submit-ro"],
+                                  ["#s2-back","s2-back","s2-back-ro"],
+                                  ["#f-submit","s3-submit","s3-submit-ro"],
+                                  ["#f-back","s3-back","s3-back-ro"]]) {
+      const el = $(id), pos = L.sprites[id.slice(1)], [sw, sh] = MAN.sprite[base];
+      const w = pos.w || sw, h = w * sh / sw;
+      el.style.width  = pct(w, CW);  el.style.height = pct(h, CH);
+      el.style.left   = pct(pos.cx - w / 2, CW);
+      el.style.top    = pct(pos.cy - h / 2, CH);
+      swapOnHover(el, base, ro);
+    }
+
+    // lever: the dome is a separate overlay on desktop, baked into the art on mobile
+    const dm = L.dome, domeEl = $("#leverDome");
+    if (dm.art) {
+      domeEl.style.display = "block";
+      domeEl.style.left = pct(dm.x, CW); domeEl.style.top = pct(dm.y, CH);
+      domeEl.style.width = pct(dm.w, CW); domeEl.style.height = pct(dm.h, CH);
+      domeEl.style.backgroundImage = `url(${A}${dm.art}.webp)`;
+    } else domeEl.style.display = "none";
+
+    const [aw, ah] = [L.arm.w, L.arm.h];
+    const [rawW, rawH] = MAN.sprite["lever"];
+    const piv = { x: 290 / rawW * aw, y: 245 / rawH * ah };
+    const hinge = { x: dm.x + dm.w / 2, y: dm.y + dm.h };
+    arm.style.width  = pct(aw, CW);  arm.style.height = pct(ah, CH);
+    arm.style.left   = pct(hinge.x - piv.x, CW);
+    arm.style.top    = pct(hinge.y - piv.y, CH);
+    arm.style.transformOrigin = (piv.x / aw * 100) + "% " + (piv.y / ah * 100) + "%";
+    arm.style.backgroundImage = `url(${A}lever.webp)`;
+
+    const P = L.panel, [cols, rows] = L.grid, panel = $("#panel");
+    panel.style.left = pct(P.x, CW);  panel.style.top = pct(P.y, CH);
+    panel.style.width = pct(P.w, CW); panel.style.height = pct(P.h, CH);
+    panel.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+    panel.style.gridTemplateRows    = `repeat(${rows},1fr)`;
+
+    // Dave's mock scatters and tilts the tubes rather than gridding them
+    $$(".cell").forEach((cell, i) => {
+      if (L.scatter) {
+        cell.style.transform =
+          `translate(${(rnd(i,1)-.5)*26}%, ${(rnd(i,2)-.5)*18}%)`;
+        cell.querySelector(".choice").style.setProperty("--tilt", ((rnd(i,3)-.5)*22).toFixed(1) + "deg");
+      } else {
+        cell.style.transform = "";
+        cell.querySelector(".choice").style.setProperty("--tilt", "0deg");
+      }
+    });
+
+    const FB = L.fieldBox;
+    ["#f-first","#f-last","#f-email","#f-fav"].forEach((id, n) => {
+      const el = $(id);
+      el.style.left = pct(FB.x, CW); el.style.width = pct(FB.w, CW);
+      el.style.top  = pct(FB.tops[n], CH); el.style.height = pct(FB.h, CH);
+    });
+    Object.assign($("#formErr").style, { left: pct(FB.x, CW), width: pct(FB.w, CW),
+      top: pct(FB.tops[3] + FB.h + 12, CH) });
+    Object.assign($("#formLegal").style, MOBILE.matches
+      ? { left: "6%", width: "88%", top: "93%" }
+      : { left: "52%", width: "44%", top: "88%" });
+  }
+
+  /* Cover only when the frame is within ~11% of the canvas aspect, so the crop
+     stays under about a tenth. Beyond that, contain and letterbox instead —
+     a phone frame is far enough from 9:16 that covering would clip the panel. */
+  function fitCanvas() {
+    const frame = innerWidth / innerHeight, canvas = CW / CH;
+    document.body.classList.toggle("cover", Math.abs(Math.log(frame / canvas)) < 0.107);
+  }
+
+  function swapOnHover(el, base, ro) {
+    if (el._swap) { el.removeEventListener("pointerenter", el._swap.on);
+                    el.removeEventListener("pointerleave", el._swap.off);
+                    el.removeEventListener("focus", el._swap.on);
+                    el.removeEventListener("blur", el._swap.off); }
+    el.style.backgroundImage = `url(${A}${base}.webp)`;
+    if (!ro) { el._swap = null; return; }
+    const pre = new Image(); pre.src = A + ro + ".webp";
+    const on  = () => { if (!el.disabled) el.style.backgroundImage = `url(${A}${ro}.webp)`; };
+    const off = () => el.style.backgroundImage = `url(${A}${base}.webp)`;
+    el.addEventListener("pointerenter", on); el.addEventListener("pointerleave", off);
+    el.addEventListener("focus", on);        el.addEventListener("blur", off);
+    el._swap = { on, off };
+  }
+
+  const LEVER_ANGLE = [0, 50, 100];   // left · middle · hard right
+  const arm = $("#leverArm");
 
   panel.innerHTML = FLAVOURS.map((f, i) => `
     <div class="cell">
       <button class="choice" data-i="${i}" role="button" aria-pressed="false"
               aria-label="${f.name}" style="background-image:url(${A}c-${f.key}.webp)"></button>
     </div>`).join("");
-
-  FLAVOURS.forEach(f => { const p = new Image(); p.src = `${A}c-${f.key}-sel.webp`; });
-
+  FLAVOURS.forEach(f => { const pre = new Image(); pre.src = `${A}c-${f.key}-sel.webp`; });
   panel.addEventListener("click", e => {
     const b = e.target.closest(".choice"); if (b) toggle(+b.dataset.i);
   });
 
+  $("#flavourList").innerHTML = FLAVOURS.map(f => `<option value="${f.name}">`).join("");
+  $("#formLegal").innerHTML = CFG.legal.replace(/Official Rules/,
+    `<a href="${CFG.rulesUrl}" target="_blank" rel="noopener">Official Rules</a>`);
+  $("#lnk-ig").href = CFG.instagram;
+  $("#lnk-tt").href = CFG.tiktok;
+
+  applyLayout();
+  MOBILE.addEventListener("change", () => { applyLayout(); render(); });
+  addEventListener("resize", fitCanvas);
+
+  /* ------------------------------------------------------ selection */
   function toggle(i) {
     if (state.sent) return;
     const at = state.picks.indexOf(i);
@@ -190,6 +234,7 @@
       b.style.backgroundImage = `url(${A}c-${f.key}${on ? "-sel" : ""}.webp)`;
       b.classList.toggle("sel", on);
       b.classList.toggle("dim", ready && !on);
+      b.style.setProperty("--pick", on ? ((i % 2 ? -1 : 1) * 7) + "deg" : "0deg");
       b.setAttribute("aria-pressed", String(on));
     });
     const n = state.picks.length;
@@ -199,26 +244,8 @@
     const sub = $("#s2-submit");
     sub.disabled = !ready;
     sub.style.opacity = ready ? "1" : ".55";
-    $("#s-game").style.backgroundImage = `url(${A}${ready ? "bg-game-live" : "bg-game"}.webp)`;
+    $("#s-game").style.backgroundImage = `url(${A}${L.bg[ready ? "game-live" : "game"]}.webp)`;
   }
-
-  /* -------------------------------------------------------------- form */
-  $("#flavourList").innerHTML = FLAVOURS.map(f => `<option value="${f.name}">`).join("");
-  const FB = MAN.fieldBox, ids = ["#f-first", "#f-last", "#f-email", "#f-fav"];
-  ids.forEach((id, n) => {
-    const el = $(id);
-    el.style.left   = pct(FB.x, CW);
-    el.style.width  = pct(FB.w, CW);
-    el.style.top    = pct(FB.tops[n], CH);
-    el.style.height = pct(FB.h, CH);
-    el.style.fontSize = "clamp(11px, 2.6vh, 30px)";
-  });
-  Object.assign($("#formErr").style, { left: pct(FB.x, CW), width: pct(FB.w, CW),
-    top: pct(FB.tops[3] + FB.h + 14, CH), fontSize: "clamp(10px,1.9vh,22px)" });
-  Object.assign($("#formLegal").style, { left: "52%", width: "44%", top: "88%",
-    fontSize: "clamp(7px,1.15vh,13px)" });
-  $("#formLegal").innerHTML = CFG.legal.replace(/Official Rules/,
-    `<a href="${CFG.rulesUrl}" target="_blank" rel="noopener">Official Rules</a>`);
 
   const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
   function onSubmit(e) {
