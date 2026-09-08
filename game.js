@@ -45,23 +45,30 @@
     window.dispatchEvent(new CustomEvent("mysterymix:" + type, { detail: msg }));
   }
 
-  /* ------------------------------------------------------------- audio */
-  let actx = null, muted = false;
-  const ac = () => (actx ||= new (window.AudioContext || window.webkitAudioContext)());
-  function tone(freq, dur, type = "sine", vol = .16, slide = 0) {
-    if (muted) return;
-    const c = ac(), o = c.createOscillator(), g = c.createGain();
-    o.type = type; o.frequency.setValueAtTime(freq, c.currentTime);
-    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), c.currentTime + dur);
-    g.gain.setValueAtTime(0, c.currentTime);
-    g.gain.linearRampToValueAtTime(vol, c.currentTime + .012);
-    g.gain.exponentialRampToValueAtTime(.0001, c.currentTime + dur);
-    o.connect(g).connect(c.destination); o.start(); o.stop(c.currentTime + dur + .02);
-  }
-  const sfxPick   = i => { tone(480 + i * 18, .15, "triangle", .15, 240); tone(1120 + i * 24, .09, "sine", .06, 260); };
-  const sfxDrop   = () => tone(290, .17, "sine", .13, -130);
-  const sfxZap    = () => { for (let k = 0; k < 9; k++) setTimeout(() => tone(140 + Math.random() * 900, .07, "sawtooth", .09), k * 55); };
-  const sfxWin    = () => [523, 659, 784, 1047].forEach((f, k) => setTimeout(() => tone(f, .32, "triangle", .14), k * 100));
+  /* ------------------------------------------------------------- audio
+     Dave's files. One 80s music loop runs for the whole game, a bubbling loop
+     sits under the game screen, and the rest are one-shots. Music ducks while
+     a one-shot plays, as the previous games did. Nothing plays before the
+     first user gesture — the title click starts it all. */
+  const AU = "audio/", HOVER = matchMedia("(hover:hover)");
+  const snd = (() => {
+    const mk = (n, loop, vol) => { const a = new Audio(AU + n + ".mp3"); a.preload = "auto"; a.loop = loop; a.volume = vol; return a; };
+    const MUSIC = .4, DUCK = .15;
+    const music = mk("music", true, MUSIC), amb = mk("bubbling", true, .3);
+    const pool = Object.fromEntries(["electricity","lever1","lever2","btn-rollover","back-rollover",
+                                     "btn-click","submit-click","back-click"].map(n => [n, mk(n, false, .8)]));
+    let muted = false, started = false, duckT = null;
+    function play(n) {
+      const a = pool[n]; if (!a || muted || !started) return;
+      try { a.currentTime = 0; a.play().catch(() => {}); } catch (e) {}
+      music.volume = DUCK; clearTimeout(duckT);
+      duckT = setTimeout(() => { music.volume = MUSIC; }, Math.max(300, (a.duration || 1) * 1000));
+    }
+    function start()      { if (!started) { started = true; music.play().catch(() => {}); } }
+    function ambience(on) { if (!started) return; on ? amb.play().catch(() => {}) : amb.pause(); }
+    function toggleMute() { muted = !muted; music.muted = amb.muted = muted; return muted; }
+    return { play, start, ambience, toggleMute };
+  })();
 
   /* ------------------------------------------------------------- state */
   const FLAVOURS = MAN.flavours.map((f, i) =>
@@ -189,7 +196,9 @@
     el.style.backgroundImage = `url(${A}${base}.webp)`;
     if (!ro) { el._swap = null; return; }
     const pre = new Image(); pre.src = A + ro + ".webp";
-    const on  = () => { if (!el.disabled) el.style.backgroundImage = `url(${A}${ro}.webp)`; };
+    const on  = () => { if (el.disabled) return;
+                        el.style.backgroundImage = `url(${A}${ro}.webp)`;
+                        if (HOVER.matches) snd.play(/back/.test(base) ? "back-rollover" : "btn-rollover"); };
     const off = () => el.style.backgroundImage = `url(${A}${base}.webp)`;
     el.addEventListener("pointerenter", on); el.addEventListener("pointerleave", off);
     el.addEventListener("focus", on);        el.addEventListener("blur", off);
@@ -234,12 +243,15 @@
   function toggle(i) {
     if (state.sent) return;
     const at = state.picks.indexOf(i);
-    if (at > -1) { state.picks.splice(at, 1); sfxDrop(); emit("flavour_deselected", { index: i, name: FLAVOURS[i].name }); }
+    if (at > -1) { state.picks.splice(at, 1); emit("flavour_deselected", { index: i, name: FLAVOURS[i].name }); }
     else {
       // as in the previous games: a third pick starts the pair over
       if (state.picks.length >= 2) state.picks = [i]; else state.picks.push(i);
-      sfxPick(i); emit("flavour_selected", { index: i, name: FLAVOURS[i].name });
+      emit("flavour_selected", { index: i, name: FLAVOURS[i].name });
     }
+    const n = state.picks.length;
+    snd.play(n === 2 ? "lever2" : "lever1");
+    if (n === 2) snd.play("electricity");
     render();
     if (state.picks.length === 2) emit("mix_created", {
       guess: state.picks.map(k => FLAVOURS[k].name),
@@ -278,6 +290,7 @@
     if (!EMAIL.test(email))  return err.textContent = "That email doesn't look right.";
     if (!fav)                return err.textContent = "Pick your favorite flavor.";
     err.textContent = "";
+    snd.play("btn-click");
     const entry = {
       firstName: first, lastName: last, email, favourite: fav, optIn: true,
       guess: state.picks.map(k => FLAVOURS[k].name),
@@ -323,25 +336,26 @@
   /* --------------------------------------------------------------- flow */
   function show(id) {
     $$(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+    snd.ambience(id === "s-game");
     emit("screen", { screen: id.replace("s-", "") });
   }
   function submitGuess() {
     if (state.picks.length !== 2 || state.sent) return;
     state.sent = true;
-    sfxZap();
+    snd.play("submit-click");
     setTimeout(() => show("s-form"), 650);
   }
-  function showDone() { sfxWin(); show("s-done"); }
+  function showDone() { show("s-done"); }
 
-  $("#btn-play").addEventListener("click", () => { ac().resume(); tone(660, .2, "triangle"); show("s-game"); });
+  $("#btn-play").addEventListener("click", () => { snd.start(); snd.play("btn-click"); show("s-game"); });
   $("#s2-submit").addEventListener("click", submitGuess);
-  $("#s2-back").addEventListener("click", () => show("s-title"));
+  $("#s2-back").addEventListener("click", () => { snd.play("back-click"); show("s-title"); });
   $("#f-back").addEventListener("click", () => {
-    state.sent = false; render(); show("s-game");
+    snd.play("back-click"); state.sent = false; render(); show("s-game");
   });
   $("#entryForm").addEventListener("submit", onSubmit);
   $("#mute").addEventListener("click", e => {
-    muted = !muted; e.currentTarget.textContent = muted ? "✕" : "♫";
+    const muted = snd.toggleMute(); e.currentTarget.textContent = muted ? "✕" : "♫";
     e.currentTarget.setAttribute("aria-label", muted ? "Unmute sound" : "Mute sound");
   });
 
