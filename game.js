@@ -50,24 +50,33 @@
      sits under the game screen, and the rest are one-shots. Music ducks while
      a one-shot plays, as the previous games did. Nothing plays before the
      first user gesture — the title click starts it all. */
-  const AU = "audio/", HOVER = matchMedia("(hover:hover)");
   const snd = (() => {
-    const mk = (n, loop, vol) => { const a = new Audio(AU + n + ".mp3"); a.preload = "auto"; a.loop = loop; a.volume = vol; return a; };
     const MUSIC = .25, DUCK = .1;
-    const music = mk("music", true, MUSIC), amb = mk("bubbling", true, .3);
-    const pool = Object.fromEntries(["electricity","lever1","lever2","btn-rollover","back-rollover",
-                                     "btn-click","submit-click","back-click"].map(n => [n, mk(n, false, .8)]));
-    let muted = false, started = false, duckT = null;
-    function play(n) {
-      const a = pool[n]; if (!a || muted || !started) return;
-      try { a.currentTime = 0; a.play().catch(() => {}); } catch (e) {}
-      music.volume = DUCK; clearTimeout(duckT);
-      duckT = setTimeout(() => { music.volume = MUSIC; }, Math.max(300, (a.duration || 1) * 1000));
+    const VOL = { music: MUSIC, bubbling: .3, electricity: .8, lever1: .8, lever2: .8, "btn-rollover": .8,
+                  "back-rollover": .8, "btn-click": .8, "submit-click": .8, "back-click": .8 };
+    const LOOP = new Set(["music", "bubbling"]);
+    const pool = {};
+    for (const n in VOL) {
+      const a = pool[n] = new Audio(`audio/${n}.mp3`);
+      a.volume = VOL[n]; a.loop = LOOP.has(n);
+      // the two loops are 1.3 MB; they are fetched after the title art has shown
+      a.preload = a.loop ? "none" : "auto";
+      if (!a.loop) a.onended = () => { if (!shots.some(b => !b.paused && !b.ended)) music.volume = MUSIC; };
     }
-    function start()      { if (!started) { started = true; music.play().catch(() => {}); } }
-    function ambience(on) { if (!started) return; on ? amb.play().catch(() => {}) : amb.pause(); }
-    function toggleMute() { muted = !muted; music.muted = amb.muted = muted; return muted; }
-    return { play, start, ambience, toggleMute };
+    const { music, bubbling } = pool, shots = Object.values(pool).filter(a => !a.loop);
+    let muted = false, started = false;
+    function play(n) {
+      if (!started) return;
+      const a = pool[n]; a.currentTime = 0; a.play().catch(() => {});
+      music.volume = DUCK;                 // restored by onended, once no one-shot is left
+    }
+    return {
+      play,
+      warm:       () => { music.load(); bubbling.load(); },
+      start:      () => { if (!started) { started = true; music.play().catch(() => {}); } },
+      ambience:   on => on ? bubbling.play().catch(() => {}) : bubbling.pause(),
+      toggleMute: () => { muted = !muted; for (const n in pool) pool[n].muted = muted; return muted; }
+    };
   })();
 
   /* ------------------------------------------------------------- state */
@@ -109,7 +118,7 @@
     btn.style.height = pct(th, CH);
     btn.style.left   = pct(tb.cx != null ? tb.cx - tw / 2 : o.x, CW);
     btn.style.top    = pct(tb.cy != null ? tb.cy - th / 2 : o.y, CH);
-    swapOnHover(btn, tb.overlay, tb.ro);
+    swapOnHover(btn, tb.overlay, tb.ro, "btn-rollover");
 
     for (const [id, key] of [["#lnk-ig", "ig"], ["#lnk-tt", "tiktok"]]) {
       const ov = MAN.overlay[L.social[key].overlay], el = $(id);
@@ -118,16 +127,16 @@
       el.style.backgroundImage = `url(${A}${L.social[key].overlay}.webp)`;
     }
 
-    for (const [id, base, ro] of [["#s2-submit","s2-submit","s2-submit-ro"],
-                                  ["#s2-back","s2-back","s2-back-ro"],
-                                  ["#f-submit","s3-submit","s3-submit-ro"],
-                                  ["#f-back","s3-back","s3-back-ro"]]) {
+    for (const [id, base, ro, roSnd] of [["#s2-submit","s2-submit","s2-submit-ro","btn-rollover"],
+                                         ["#s2-back","s2-back","s2-back-ro","back-rollover"],
+                                         ["#f-submit","s3-submit","s3-submit-ro","btn-rollover"],
+                                         ["#f-back","s3-back","s3-back-ro","back-rollover"]]) {
       const el = $(id), pos = L.sprites[id.slice(1)], [sw, sh] = MAN.sprite[base];
       const w = pos.w || sw, h = w * sh / sw;
       el.style.width  = pct(w, CW);  el.style.height = pct(h, CH);
       el.style.left   = pct(pos.cx - w / 2, CW);
       el.style.top    = pct(pos.cy - h / 2, CH);
-      swapOnHover(el, base, ro);
+      swapOnHover(el, base, ro, roSnd);
     }
 
     // lever: the dome is a separate overlay on desktop, baked into the art on mobile
@@ -188,7 +197,7 @@
     document.body.classList.toggle("cover", Math.abs(Math.log(frame / canvas)) < 0.107);
   }
 
-  function swapOnHover(el, base, ro) {
+  function swapOnHover(el, base, ro, roSnd) {
     if (el._swap) { el.removeEventListener("pointerenter", el._swap.on);
                     el.removeEventListener("pointerleave", el._swap.off);
                     el.removeEventListener("focus", el._swap.on);
@@ -196,9 +205,10 @@
     el.style.backgroundImage = `url(${A}${base}.webp)`;
     if (!ro) { el._swap = null; return; }
     const pre = new Image(); pre.src = A + ro + ".webp";
-    const on  = () => { if (el.disabled) return;
-                        el.style.backgroundImage = `url(${A}${ro}.webp)`;
-                        if (HOVER.matches) snd.play(/back/.test(base) ? "back-rollover" : "btn-rollover"); };
+    const on  = e => { if (el.disabled) return;
+                       el.style.backgroundImage = `url(${A}${ro}.webp)`;
+                       // a real hover only: touch fires pointerenter too, focus has no pointer
+                       if (e.pointerType && e.pointerType !== "touch") snd.play(roSnd); };
     const off = () => el.style.backgroundImage = `url(${A}${base}.webp)`;
     el.addEventListener("pointerenter", on); el.addEventListener("pointerleave", off);
     el.addEventListener("focus", on);        el.addEventListener("blur", off);
@@ -231,7 +241,7 @@
   {
     const app = $("#app"), first = new Image();
     let shown = false;
-    const reveal = () => { if (!shown) { shown = true; app.classList.add("ready"); } };
+    const reveal = () => { if (!shown) { shown = true; app.classList.add("ready"); snd.warm(); } };
     first.src = `${A}${L.bg.title}.webp`;
     first.decode().catch(() => {}).then(reveal);
     setTimeout(reveal, 1500);                          // never hold a blank screen
@@ -253,7 +263,7 @@
     snd.play(n === 2 ? "lever2" : "lever1");
     if (n === 2) snd.play("electricity");
     render();
-    if (state.picks.length === 2) emit("mix_created", {
+    if (n === 2) emit("mix_created", {
       guess: state.picks.map(k => FLAVOURS[k].name),
       guessIndexes: [...state.picks]
     });
@@ -304,7 +314,7 @@
     if (token) entry.recaptchaToken = token;
     emit("entry_submitted", { entry });
     if (CFG.waitForHost) setPending(true);
-    else { setPending(false); showDone(); }
+    else { setPending(false); show("s-done"); }
   }
   function setPending(on) {
     const b = $("#f-submit"); if (!b) return;
@@ -326,7 +336,7 @@
       clearTimeout(tokenTimer); const f = tokenCb; tokenCb = null; f(m.token || null); return;
     }
     if (!m || m.source !== "mystery-mix-host") return;
-    if (m.type === "entry_accepted") { setPending(false); showDone(); }
+    if (m.type === "entry_accepted") { setPending(false); show("s-done"); }
     if (m.type === "entry_rejected") {
       setPending(false);
       $("#formErr").textContent = m.message || "Chewbie couldn't save that. Try again.";
@@ -345,7 +355,6 @@
     snd.play("submit-click");
     setTimeout(() => show("s-form"), 650);
   }
-  function showDone() { show("s-done"); }
 
   $("#btn-play").addEventListener("click", () => { snd.start(); snd.play("btn-click"); show("s-game"); });
   $("#s2-submit").addEventListener("click", submitGuess);
