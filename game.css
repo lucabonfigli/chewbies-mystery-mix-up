@@ -25,8 +25,12 @@ html,body{overflow:hidden}
   overflow:hidden;
   container-type:size;              /* lets type size against the canvas via cqh */
   opacity:0;transition:opacity .4s ease;   /* held until the title art has decoded */
+  /* CSS-only safety: if the script never runs (404 mid-deploy, blocked, thrown),
+     the app still reveals at 1.5s. JS normally adds .ready well before this. */
+  animation:appReveal 0s linear 1.5s forwards;
 }
-#app.ready{opacity:1}
+@keyframes appReveal{to{opacity:1}}
+#app.ready{opacity:1;animation:none}
   width:min(100vw, calc(100vh * var(--cw) / var(--ch)));
   height:min(100vh, calc(100vw * var(--ch) / var(--cw)));
 }

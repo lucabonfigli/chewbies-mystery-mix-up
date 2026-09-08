@@ -24,10 +24,13 @@
     recaptchaMs  : 8000,
     instagram    : "https://www.instagram.com/hichewusa/",
     tiktok       : "https://www.tiktok.com/@hichewusa",
-    rulesUrl     : "#",
+    // Dates below are the ones supplied; the URL follows the Easter page's
+    // pattern (hi-chew.com/pages/<campaign>) and is a guess until the page exists.
+    rulesUrl     : "https://www.hi-chew.com/pages/flavormash",
     legal        : "*NO PURCHASE NECESSARY. Void where prohibited. Open to legal "
-                 + "residents of the 50 U.S. & D.C., 18+ years or older. Sweepstakes "
-                 + "begins [START] and ends [END]. Subject to Official Rules.",
+                 + "residents of the 50 U.S. & D.C., [18+] years or older. Sweepstakes "
+                 + "begins (02/24/2026) and ends (04/04/2026). Subject to Official Rules "
+                 + "at HI-CHEW.com/pages/flavormash.",
     flavours     : null
   }, window.FLAVOR_MASH_CONFIG || {});
 
@@ -207,8 +210,9 @@
   });
 
   $("#flavourList").innerHTML = FLAVOURS.map(f => `<option value="${f.name}">`).join("");
-  $("#formLegal").innerHTML = CFG.legal.replace(/Official Rules/,
-    `<a href="${CFG.rulesUrl}" target="_blank" rel="noopener">Official Rules</a>`);
+  // link the whole "Official Rules at <url>" phrase, whatever the url is
+  $("#formLegal").innerHTML = CFG.legal.replace(/Official Rules.*(?=\.\s*$)/, m =>
+    `<a href="${CFG.rulesUrl}" target="_blank" rel="noopener">${m}</a>`);
   $("#lnk-ig").href = CFG.instagram;
   $("#lnk-tt").href = CFG.tiktok;
 
