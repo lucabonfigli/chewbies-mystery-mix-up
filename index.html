@@ -18,8 +18,11 @@
   <!-- 2 · GAME -->
   <section class="screen" id="s-game" data-bg="bg-game">
     <div class="panel" id="panel"></div>
-    <button class="lever" id="lever" aria-label="Pull the lever to submit your guess" disabled></button>
-    <button class="spriteBtn" id="s2-back" data-spr="s2-back" aria-label="Back"></button>
+    <div class="leverArm"  id="leverArm"  aria-hidden="true"></div>
+    <div class="leverDome" id="leverDome" aria-hidden="true"></div>
+    <p class="srOnly" id="leverState" role="status" aria-live="polite"></p>
+    <button class="spriteBtn" id="s2-submit" data-spr="s2-submit" aria-label="Submit your guess" disabled></button>
+    <button class="spriteBtn" id="s2-back"   data-spr="s2-back"   aria-label="Back"></button>
   </section>
 
   <!-- 3 · FORM -->

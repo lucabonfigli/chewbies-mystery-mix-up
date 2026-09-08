@@ -93,6 +93,7 @@
   /* ------------------------------------------- loose sprite buttons */
   // measured against the 2880x2160 canvas
   const SPRITE_POS = {
+    "s2-submit": { cx: 2380, cy: 1900 },
     "s2-back":   { cx: 300,  cy: 2010 },
     "f-submit":  { cx: 2060, cy: 1750 },
     "f-back":    { cx: 1560, cy: 1750 }
@@ -112,20 +113,37 @@
       el.addEventListener("focus", on);        el.addEventListener("blur", off);
     }
   }
-  placeSprite($("#s2-back"),  "s2-back", "s2-back-ro", SPRITE_POS["s2-back"]);
+  placeSprite($("#s2-submit"), "s2-submit", "s2-submit-ro", SPRITE_POS["s2-submit"]);
+  placeSprite($("#s2-back"),   "s2-back",   "s2-back-ro",   SPRITE_POS["s2-back"]);
   placeSprite($("#f-submit"), "s3-submit", "s3-submit-ro", SPRITE_POS["f-submit"]);
   placeSprite($("#f-back"),   "s3-back",   "s3-back-ro",   SPRITE_POS["f-back"]);
 
-  /* ------------------------------------------------------------- lever */
-  const lever = $("#lever"), lp = MAN.overlay["lever-pulled"];
+  /* ------------------------------------------------------------- lever
+     Per Dave: left with nothing picked, middle at one, hard right at two —
+     and at two the background switches to the electrified plate.
+     The arm art is drawn ~50deg left of vertical, so 0deg IS "all the way
+     left"; +50 is upright and +100 is all the way right. The dome overlay
+     covers the pivot, so the arm rotates behind it. */
+  const LEVER_ANGLE = [0, 50, 100];
+  const dome = MAN.overlay["lever-pulled"];
   const [lw, lh] = MAN.sprite["lever"];
-  // the pulled-state art tells us exactly where the housing is
-  const leverCx = lp.x + lp.w / 2, leverBottom = lp.y + lp.h;
-  lever.style.width  = pct(lw, CW);
-  lever.style.height = pct(lh, CH);
-  lever.style.left   = pct(leverCx - lw / 2, CW);
-  lever.style.top    = pct(leverBottom - lh, CH);
-  lever.style.backgroundImage = `url(${A}lever.webp)`;
+  const PIVOT = { x: 290, y: 245 };                  // shaft tip in sprite px
+  const hinge = { x: dome.x + dome.w / 2, y: dome.y + dome.h };
+
+  const arm = $("#leverArm");
+  arm.style.width  = pct(lw, CW);
+  arm.style.height = pct(lh, CH);
+  arm.style.left   = pct(hinge.x - PIVOT.x, CW);
+  arm.style.top    = pct(hinge.y - PIVOT.y, CH);
+  arm.style.transformOrigin = (PIVOT.x / lw * 100) + "% " + (PIVOT.y / lh * 100) + "%";
+  arm.style.backgroundImage = `url(${A}lever.webp)`;
+
+  const domeEl = $("#leverDome");
+  domeEl.style.left   = pct(dome.x, CW);
+  domeEl.style.top    = pct(dome.y, CH);
+  domeEl.style.width  = pct(dome.w, CW);
+  domeEl.style.height = pct(dome.h, CH);
+  domeEl.style.backgroundImage = `url(${A}lever-pulled.webp)`;
 
   /* ------------------------------------------------------------- panel */
   const P = MAN.panel, COLS = 5, ROWS = 4;
@@ -174,8 +192,13 @@
       b.classList.toggle("dim", ready && !on);
       b.setAttribute("aria-pressed", String(on));
     });
-    lever.classList.toggle("ready", ready);
-    lever.disabled = !ready;
+    const n = state.picks.length;
+    arm.style.transform = `rotate(${LEVER_ANGLE[n]}deg)`;
+    $("#leverState").textContent =
+      ["No flavors picked yet.", "One flavor picked.", "Two flavors picked — ready to submit."][n];
+    const sub = $("#s2-submit");
+    sub.disabled = !ready;
+    sub.style.opacity = ready ? "1" : ".55";
     $("#s-game").style.backgroundImage = `url(${A}${ready ? "bg-game-live" : "bg-game"}.webp)`;
   }
 
@@ -254,20 +277,19 @@
     $$(".screen").forEach(s => s.classList.toggle("on", s.id === id));
     emit("screen", { screen: id.replace("s-", "") });
   }
-  function pullLever() {
+  function submitGuess() {
     if (state.picks.length !== 2 || state.sent) return;
     state.sent = true;
-    lever.classList.add("pulled"); lever.disabled = true;
     sfxZap();
-    setTimeout(() => show("s-form"), 700);
+    setTimeout(() => show("s-form"), 650);
   }
   function showDone() { sfxWin(); show("s-done"); }
 
   $("#btn-play").addEventListener("click", () => { ac().resume(); tone(660, .2, "triangle"); show("s-game"); });
-  lever.addEventListener("click", pullLever);
+  $("#s2-submit").addEventListener("click", submitGuess);
   $("#s2-back").addEventListener("click", () => show("s-title"));
   $("#f-back").addEventListener("click", () => {
-    state.sent = false; lever.classList.remove("pulled"); render(); show("s-game");
+    state.sent = false; render(); show("s-game");
   });
   $("#entryForm").addEventListener("submit", onSubmit);
   $("#mute").addEventListener("click", e => {
