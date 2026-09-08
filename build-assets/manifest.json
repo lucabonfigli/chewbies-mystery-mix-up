@@ -299,7 +299,7 @@
      "cy": 1750
     }
    },
-   "scatter": false
+   "scatter": true
   },
   "mobile": {
    "canvas": [

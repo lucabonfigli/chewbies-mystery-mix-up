@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Stamp game.css/game.js with a content hash so a cached script can never run
-against newer markup. Run after editing either file, before committing."""
+against newer markup. The manifest is hashed in too, because game.js fetches it
+with the same version — a manifest-only change must still bust the cache.
+Run after editing any of the three, before committing."""
 import hashlib, pathlib, re
 root = pathlib.Path(__file__).parent
 ver = hashlib.sha1((root.joinpath("game.js").read_text()
-                  + root.joinpath("game.css").read_text()).encode()).hexdigest()[:8]
+                  + root.joinpath("game.css").read_text()
+                  + root.joinpath("build-assets/manifest.json").read_text()).encode()).hexdigest()[:8]
 p = root / "index.html"; s = p.read_text()
 s = re.sub(r'href="game\.css(\?v=[0-9a-f]+)?"', f'href="game.css?v={ver}"', s)
 s = re.sub(r'src="game\.js(\?v=[0-9a-f]+)?"',  f'src="game.js?v={ver}"',  s)
