@@ -13,13 +13,24 @@
 html,body{height:100%;margin:0}
 body{background:var(--page);font-family:var(--ui);overflow:hidden;-webkit-font-smoothing:antialiased}
 
+/* The artwork is 4:3. The Shopify frame is 1100x866 (1.270), so "contain"
+   would letterbox with bands of page purple top and bottom. Near-landscape
+   frames therefore COVER — 4:3 into 1.270 crops about 2.4% horizontally,
+   which is nothing. Portrait frames stay contained, because covering there
+   would throw away most of the picture. */
+html,body{overflow:hidden}
 #app{
-  position:relative;overflow:hidden;
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  overflow:hidden;
   width:min(100vw, calc(100vh * 4 / 3));
   height:min(100vh, calc(100vw * 3 / 4));
-  margin:auto;
 }
-html,body{display:flex;align-items:center;justify-content:center}
+@media (min-aspect-ratio:11/10) and (max-aspect-ratio:8/5){
+  #app{
+    width:max(100vw, calc(100vh * 4 / 3));
+    height:max(100vh, calc(100vw * 3 / 4));
+  }
+}
 
 .screen{
   position:absolute;inset:0;display:none;opacity:0;
