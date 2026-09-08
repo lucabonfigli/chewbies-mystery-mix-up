@@ -59,25 +59,22 @@ body.cover #app{
 }
 .bgLive.on{opacity:1}
 
-/* ---------- overlay buttons: art already knows where it sits ---------- */
-.ovBtn{
-  position:absolute;border:0;padding:0;cursor:pointer;background:transparent;
-  background-repeat:no-repeat;background-size:100% 100%;
+/* ---------- buttons: --base / --ro / --off are set per layout; .ro flips the art ---------- */
+.ovBtn,.spriteBtn{
+  position:absolute;border:0;padding:0;cursor:pointer;
+  background:var(--base) no-repeat 0 0 / 100% 100%;
   transition:transform .18s var(--ease);transform-origin:center;
 }
-.ovBtn:hover,.ovBtn:focus-visible{transform:scale(var(--lift))}
-.ovBtn:focus-visible{outline:3px solid #fff;outline-offset:6px;border-radius:8px}
-.ovBtn:active{transform:scale(1.03)}
-
-/* ---------- loose sprite buttons ---------- */
-.spriteBtn{
-  position:absolute;border:0;padding:0;cursor:pointer;background:transparent;
-  background-repeat:no-repeat;background-size:100% 100%;
-  transition:transform .18s var(--ease);transform-origin:center;
-}
+.ovBtn.ro,.spriteBtn.ro{background-image:var(--ro)}
+.ovBtn:focus-visible,.spriteBtn:focus-visible{outline:3px solid #fff;outline-offset:6px;border-radius:8px}
+.ovBtn:active,.spriteBtn:active{transform:scale(1.03)}
+/* overlay buttons are sized to the ROLLOVER art's box (it is the larger of the two);
+   the idle art is drawn inside it at its own size and offset, so neither stretches */
+.ovBtn{background-size:var(--bs,100% 100%);background-position:var(--bp,0 0)}
+.ovBtn.ro{background-size:100% 100%;background-position:0 0}
+/* sprite buttons share one box for both states, so they grow on hover instead */
 .spriteBtn:hover,.spriteBtn:focus-visible{transform:scale(var(--lift))}
-.spriteBtn:focus-visible{outline:3px solid #fff;outline-offset:6px;border-radius:8px}
-.spriteBtn[disabled]{cursor:default;filter:grayscale(.5) brightness(.75);transform:none}
+.spriteBtn[disabled]{cursor:default;transform:none;background-image:var(--off,var(--base))}
 
 /* ---------- the flavour panel ---------- */
 .panel{position:absolute;display:grid;gap:0}
@@ -138,11 +135,18 @@ body.cover #app{
   font-size:clamp(10px,2cqh,22px);
 }
 .legal{
-  position:absolute;text-align:center;margin:0;line-height:1.35;
+  position:absolute;bottom:1.2%;text-align:center;margin:0;line-height:1.35;
   color:rgba(255,255,255,.82);
   font-size:clamp(7px,1.25cqh,13px);
 }
 .legal a{color:#9cf06a}
+/* mobile: Back sits at 96% (Dave's comp), so the footnote gets the last 4% */
+body[data-layout=mobile] .legal{bottom:.2%;line-height:1.15;font-size:clamp(6.5px,1cqh,13px)}
+
+/* ---------- lightning ---------- */
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:10}
+.flash.go{animation:lightning .55s ease-out}
+@keyframes lightning{0%{opacity:0}8%{opacity:1}22%{opacity:.2}34%{opacity:.85}100%{opacity:0}}
 
 /* ---------- chrome ---------- */
 .mute{

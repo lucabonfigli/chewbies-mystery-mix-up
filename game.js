@@ -46,11 +46,13 @@
   }
 
   /* ------------------------------------------------------------- audio
-     Dave's files. One 80s music loop runs for the whole game, a bubbling loop
-     sits under the game screen, and the rest are one-shots. Music ducks while
-     a one-shot plays, as the previous games did. Nothing plays before the
-     first user gesture — the title click starts it all. */
+     Dave's files: an 80s music loop, a bubbling loop, and one-shots. Music ducks
+     while a one-shot plays, as the previous games did. Two arrangements for Dave
+     to compare:
+       ?audio=a (default)  music the whole way through, bubbling under the game screen
+       ?audio=b            music on the title and done screens only, bubbling under game + form */
   const snd = (() => {
+    const MODE = QS.get("audio") === "b" ? "b" : "a";
     const MUSIC = .25, DUCK = .1;
     const VOL = { music: MUSIC, bubbling: .3, electricity: .8, lever1: .8, lever2: .8, "btn-rollover": .8,
                   "back-rollover": .8, "btn-click": .8, "submit-click": .8, "back-click": .8 };
@@ -58,23 +60,30 @@
     const pool = {};
     for (const n in VOL) {
       const a = pool[n] = new Audio(`audio/${n}.mp3`);
-      a.volume = VOL[n]; a.loop = LOOP.has(n);
-      // the two loops are 1.3 MB; they are fetched after the title art has shown
-      a.preload = a.loop ? "none" : "auto";
+      a.volume = VOL[n]; a.loop = LOOP.has(n); a.preload = "auto";
       if (!a.loop) a.onended = () => { if (!shots.some(b => !b.paused && !b.ended)) music.volume = MUSIC; };
     }
     const { music, bubbling } = pool, shots = Object.values(pool).filter(a => !a.loop);
     let muted = false, started = false;
     function play(n) {
-      if (!started) return;
-      const a = pool[n]; a.currentTime = 0; a.play().catch(() => {});
+      const a = pool[n]; a.currentTime = 0; a.play().catch(() => {});   // rejected until a gesture; fine
       music.volume = DUCK;                 // restored by onended, once no one-shot is left
     }
+    // Dave: music starts right away. Browsers allow that only after a gesture on
+    // the page, so try at once and otherwise on the first press or key.
+    function start() {
+      if (started) return;
+      music.play().then(() => { started = true; }).catch(() =>
+        ["pointerdown", "keydown"].forEach(ev => addEventListener(ev, start, { once: true })));
+    }
+    function screen(id) {
+      const mid = id === "s-game" || id === "s-form";
+      if (MODE === "b") mid ? music.pause() : music.play().catch(() => {});
+      const bub = MODE === "b" ? mid : id === "s-game";
+      bub ? bubbling.play().catch(() => {}) : bubbling.pause();
+    }
     return {
-      play,
-      warm:       () => { music.load(); bubbling.load(); },
-      start:      () => { if (!started) { started = true; music.play().catch(() => {}); } },
-      ambience:   on => on ? bubbling.play().catch(() => {}) : bubbling.pause(),
+      play, start, screen,
       toggleMute: () => { muted = !muted; for (const n in pool) pool[n].muted = muted; return muted; }
     };
   })();
@@ -113,25 +122,31 @@
 
     // title button: a placed overlay on desktop, a sized sprite on mobile
     const tb = L.titleBtn, o = MAN.overlay[tb.overlay], btn = $("#btn-play");
-    const tw = tb.w || o.w, th = tw * o.h / o.w;
-    btn.style.width  = pct(tw, CW);
-    btn.style.height = pct(th, CH);
-    btn.style.left   = pct(tb.cx != null ? tb.cx - tw / 2 : o.x, CW);
-    btn.style.top    = pct(tb.cy != null ? tb.cy - th / 2 : o.y, CH);
+    const fr = tb.ro ? MAN.overlay[tb.ro] : o;      // the box is the larger (rollover) art
+    const k  = tb.w ? tb.w / o.w : 1, fw = fr.w * k, fh = fr.h * k;
+    btn.style.width  = pct(fw, CW);
+    btn.style.height = pct(fh, CH);
+    btn.style.left   = pct(tb.cx != null ? tb.cx - fw / 2 : fr.x, CW);
+    btn.style.top    = pct(tb.cy != null ? tb.cy - fh / 2 : fr.y, CH);
+    // idle art drawn at its own size and offset within that box
+    const off = (a, b, c) => (b === c ? 0 : (a / (b - c)) * 100).toFixed(2) + "%";
+    btn.style.setProperty("--bs", `${(o.w / fr.w * 100).toFixed(2)}% ${(o.h / fr.h * 100).toFixed(2)}%`);
+    btn.style.setProperty("--bp", `${off(o.x - fr.x, fr.w, o.w)} ${off(o.y - fr.y, fr.h, o.h)}`);
     swapOnHover(btn, tb.overlay, tb.ro, "btn-rollover");
 
     for (const [id, key] of [["#lnk-ig", "ig"], ["#lnk-tt", "tiktok"]]) {
       const ov = MAN.overlay[L.social[key].overlay], el = $(id);
       el.style.left = pct(ov.x, CW); el.style.top = pct(ov.y, CH);
       el.style.width = pct(ov.w, CW); el.style.height = pct(ov.h, CH);
-      el.style.backgroundImage = `url(${A}${L.social[key].overlay}.webp)`;
+      el.style.setProperty("--base", `url(${A}${L.social[key].overlay}.webp)`);
     }
 
-    for (const [id, base, ro, roSnd] of [["#s2-submit","s2-submit","s2-submit-ro","btn-rollover"],
-                                         ["#s2-back","s2-back","s2-back-ro","back-rollover"],
-                                         ["#f-submit","s3-submit","s3-submit-ro","btn-rollover"],
-                                         ["#f-back","s3-back","s3-back-ro","back-rollover"]]) {
+    for (const [id, base, ro, roSnd, off] of [["#s2-submit","s2-submit","s2-submit-ro","btn-rollover","s2-submit-off"],
+                                              ["#s2-back","s2-back","s2-back-ro","back-rollover"],
+                                              ["#f-submit","s3-submit","s3-submit-ro","btn-rollover"],
+                                              ["#f-back","s3-back","s3-back-ro","back-rollover"]]) {
       const el = $(id), pos = L.sprites[id.slice(1)], [sw, sh] = MAN.sprite[base];
+      if (off) el.style.setProperty("--off", `url(${A}${off}.webp)`);
       const w = pos.w || sw, h = w * sh / sw;
       el.style.width  = pct(w, CW);  el.style.height = pct(h, CH);
       el.style.left   = pct(pos.cx - w / 2, CW);
@@ -185,8 +200,8 @@
     Object.assign($("#formErr").style, { left: pct(FB.x, CW), width: pct(FB.w, CW),
       top: pct(FB.tops[3] + FB.h + 12, CH) });
     Object.assign($("#formLegal").style, MOBILE.matches
-      ? { left: "6%", width: "88%", top: "93%" }
-      : { left: "52%", width: "44%", top: "88%" });
+      ? { left: "3%", width: "94%" }
+      : { left: "52%", width: "44%" });
   }
 
   /* Cover only when the frame is within ~11% of the canvas aspect, so the crop
@@ -202,14 +217,15 @@
                     el.removeEventListener("pointerleave", el._swap.off);
                     el.removeEventListener("focus", el._swap.on);
                     el.removeEventListener("blur", el._swap.off); }
-    el.style.backgroundImage = `url(${A}${base}.webp)`;
+    el.style.setProperty("--base", `url(${A}${base}.webp)`);
     if (!ro) { el._swap = null; return; }
+    el.style.setProperty("--ro", `url(${A}${ro}.webp)`);
     const pre = new Image(); pre.src = A + ro + ".webp";
     const on  = e => { if (el.disabled) return;
-                       el.style.backgroundImage = `url(${A}${ro}.webp)`;
+                       el.classList.add("ro");
                        // a real hover only: touch fires pointerenter too, focus has no pointer
                        if (e.pointerType && e.pointerType !== "touch") snd.play(roSnd); };
-    const off = () => el.style.backgroundImage = `url(${A}${base}.webp)`;
+    const off = () => el.classList.remove("ro");
     el.addEventListener("pointerenter", on); el.addEventListener("pointerleave", off);
     el.addEventListener("focus", on);        el.addEventListener("blur", off);
     el._swap = { on, off };
@@ -241,7 +257,7 @@
   {
     const app = $("#app"), first = new Image();
     let shown = false;
-    const reveal = () => { if (!shown) { shown = true; app.classList.add("ready"); snd.warm(); } };
+    const reveal = () => { if (!shown) { shown = true; app.classList.add("ready"); snd.start(); } };
     first.src = `${A}${L.bg.title}.webp`;
     first.decode().catch(() => {}).then(reveal);
     setTimeout(reveal, 1500);                          // never hold a blank screen
@@ -252,15 +268,16 @@
   /* ------------------------------------------------------ selection */
   function toggle(i) {
     if (state.sent) return;
-    const at = state.picks.indexOf(i);
+    const at = state.picks.indexOf(i), before = state.picks.length;
     if (at > -1) { state.picks.splice(at, 1); emit("flavour_deselected", { index: i, name: FLAVOURS[i].name }); }
     else {
       // as in the previous games: a third pick starts the pair over
       if (state.picks.length >= 2) state.picks = [i]; else state.picks.push(i);
       emit("flavour_selected", { index: i, name: FLAVOURS[i].name });
     }
+    // Dave: deselecting plays the sounds in reverse — lever2 leaving 2, lever1 leaving 1
     const n = state.picks.length;
-    snd.play(n === 2 ? "lever2" : "lever1");
+    snd.play(Math.max(before, n) === 2 ? "lever2" : "lever1");
     if (n === 2) snd.play("electricity");
     render();
     if (n === 2) emit("mix_created", {
@@ -284,8 +301,7 @@
     $("#leverState").textContent =
       ["No flavors picked yet.", "One flavor picked.", "Two flavors picked — ready to submit."][n];
     const sub = $("#s2-submit");
-    sub.disabled = !ready;
-    sub.style.opacity = ready ? "1" : ".55";
+    sub.disabled = !ready;                         // greyed art via --off while disabled
     $("#bgLive").classList.toggle("on", ready);   // electrified layer fades in over the idle art
   }
 
@@ -346,7 +362,7 @@
   /* --------------------------------------------------------------- flow */
   function show(id) {
     $$(".screen").forEach(s => s.classList.toggle("on", s.id === id));
-    snd.ambience(id === "s-game");
+    snd.screen(id);
     emit("screen", { screen: id.replace("s-", "") });
   }
   function submitGuess() {
@@ -356,7 +372,10 @@
     setTimeout(() => show("s-form"), 650);
   }
 
-  $("#btn-play").addEventListener("click", () => { snd.start(); snd.play("btn-click"); show("s-game"); });
+  $("#btn-play").addEventListener("click", () => {
+    const fl = $("#flash"); fl.classList.remove("go"); void fl.offsetWidth; fl.classList.add("go");
+    snd.start(); snd.play("btn-click"); show("s-game");
+  });
   $("#s2-submit").addEventListener("click", submitGuess);
   $("#s2-back").addEventListener("click", () => { snd.play("back-click"); show("s-title"); });
   $("#f-back").addEventListener("click", () => {

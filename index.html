@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Franken Chewbie's Flavor Mash</title>
-<link rel="stylesheet" href="game.css?v=056ed507">
+<link rel="stylesheet" href="game.css?v=943f05b2">
 </head>
 <body>
 
@@ -19,8 +19,8 @@
   <section class="screen" id="s-game" data-bg="game">
     <div class="bgLive" id="bgLive" aria-hidden="true"></div>
     <div class="panel" id="panel"></div>
-    <div class="leverDome" id="leverDome" aria-hidden="true"></div>
     <div class="leverArm"  id="leverArm"  aria-hidden="true"></div>
+    <div class="leverDome" id="leverDome" aria-hidden="true"></div>
     <p class="srOnly" id="leverState" role="status" aria-live="polite"></p>
     <button class="spriteBtn" id="s2-submit" data-spr="s2-submit" aria-label="Submit your guess" disabled></button>
     <button class="spriteBtn" id="s2-back"   data-spr="s2-back"   aria-label="Back"></button>
@@ -48,11 +48,13 @@
     <a class="ovBtn" id="lnk-tt" data-ov="tiktok" target="_blank" rel="noopener" aria-label="TikTok"></a>
   </section>
 
+  <!-- lightning: a white flash over everything when the title button is hit -->
+  <div class="flash" id="flash" aria-hidden="true"></div>
 </div>
 <!-- outside #app: the canvas overflows the frame in cover mode, so anything
      pinned to its corner gets clipped. Pinned to the viewport instead. -->
 <button class="mute" id="mute" aria-label="Mute sound">&#9835;</button>
 
-<script src="game.js?v=056ed507"></script>
+<script src="game.js?v=943f05b2"></script>
 </body>
 </html>

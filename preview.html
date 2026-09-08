@@ -38,7 +38,7 @@
 
 <script>
   const f = document.getElementById("f"), ro = document.getElementById("ro");
-  f.src = "index.html?cb=" + Date.now();
+  f.src = "index.html?cb=" + Date.now() + "&" + location.search.slice(1);
   function measure(){
     const b = document.querySelector(".mm-frame").getBoundingClientRect();
     ro.textContent = `frame ${Math.round(b.width)}×${Math.round(b.height)}  ratio ${(b.width/b.height).toFixed(3)}`;

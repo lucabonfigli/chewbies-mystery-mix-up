@@ -83,6 +83,10 @@
   "s3-back-ro": [
    376,
    252
+  ],
+  "s2-submit-off": [
+   648,
+   346
   ]
  },
  "flavours": [
@@ -166,7 +170,7 @@
   },
   {
    "key": "PinaColada",
-   "name": "Pi\u00f1a Colada",
+   "name": "Piña Colada",
    "w": 253,
    "h": 358
   },
@@ -291,16 +295,15 @@
      "cy": 2010
     },
     "f-submit": {
-     "cx": 2060,
-     "cy": 1750,
-     "w": 551
+     "cx": 2021,
+     "cy": 1831
     },
     "f-back": {
-     "cx": 1560,
-     "cy": 1750
+     "cx": 300,
+     "cy": 2010
     }
    },
-   "scatter": true
+   "scatter": false
   },
   "mobile": {
    "canvas": [
@@ -363,27 +366,27 @@
    },
    "sprites": {
     "s2-submit": {
-     "cx": 542,
-     "cy": 1550,
-     "w": 465
+     "cx": 540,
+     "cy": 1595,
+     "w": 450
     },
     "s2-back": {
-     "cx": 542,
-     "cy": 1739,
-     "w": 190
+     "cx": 540,
+     "cy": 1797,
+     "w": 178
     },
     "f-submit": {
      "cx": 540,
-     "cy": 1560,
-     "w": 420
+     "cy": 1595,
+     "w": 450
     },
     "f-back": {
      "cx": 540,
-     "cy": 1745,
-     "w": 180
+     "cy": 1797,
+     "w": 178
     }
    },
-   "scatter": true
+   "scatter": false
   }
  },
  "spriteInset": {
