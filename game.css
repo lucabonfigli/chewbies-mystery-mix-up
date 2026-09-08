@@ -63,19 +63,23 @@ html,body{display:flex;align-items:center;justify-content:center}
 .choice.sel{transform:scale(var(--lift))}
 .choice.dim{filter:brightness(.62) saturate(.7)}
 
-/* ---------- the lever ---------- */
-.lever{
-  position:absolute;border:0;padding:0;background:transparent;cursor:default;
-  background-repeat:no-repeat;background-size:100% 100%;background-position:bottom center;
-  transform-origin:50% 92%;
-  transition:transform .22s var(--ease),filter .2s ease;
-  filter:grayscale(.55) brightness(.8);
+/* ---------- the lever: an indicator, not a control ----------
+   The arm art is drawn ~50deg left of vertical, so 0deg IS "all the way left";
+   +50 is upright, +100 all the way right. It pivots at the shaft tip and paints
+   OVER the housing dome, sweeping across the printed gauge. */
+.leverArm{
+  position:absolute;background-repeat:no-repeat;background-size:100% 100%;
+  transition:transform .45s cubic-bezier(.5,1.7,.45,1);
+  will-change:transform;pointer-events:none;
 }
-.lever.ready{cursor:pointer;filter:none;animation:leverHint 1.8s ease-in-out infinite}
-.lever.ready:hover,.lever.ready:focus-visible{transform:rotate(6deg) scale(1.04)}
-.lever.pulled{transform:rotate(22deg) scale(.98);animation:none}
-.lever:focus-visible{outline:3px solid #fff;outline-offset:6px;border-radius:8px}
-@keyframes leverHint{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg)}}
+.leverDome{
+  position:absolute;background-repeat:no-repeat;background-size:100% 100%;
+  pointer-events:none;
+}
+.srOnly{
+  position:absolute;width:1px;height:1px;overflow:hidden;
+  clip-path:inset(50%);white-space:nowrap;margin:0;padding:0;
+}
 
 /* ---------- form ---------- */
 #entryForm{position:absolute;inset:0}
