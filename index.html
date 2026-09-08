@@ -276,8 +276,9 @@ const CFG = Object.assign({
   // letterbox around the stage is invisible against the page
   pageColor    : "#" + (QS.get("bg") || "740494").replace(/^#/,""),
   targetOrigin : "*",     // tighten to the storefront origin in production
-  waitForHost  : false,   // true = hold the confirmation until the host acks
-  recaptcha    : false,   // true = ask the host for a v3 token before submitting
+  // ?wait=1 and ?captcha=1 let the theme section turn these on without a rebuild
+  waitForHost  : QS.get("wait")    === "1",
+  recaptcha    : QS.get("captcha") === "1",
   recaptchaMs  : 8000,    // give up waiting for the token after this
   // Placeholder until HI-CHEW legal supply this year's dates and rules URL.
   // 2025 ran 09/08–10/30 at hi-chew.com/houseofmystery.

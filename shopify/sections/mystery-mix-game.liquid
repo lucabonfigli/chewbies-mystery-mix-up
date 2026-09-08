@@ -51,7 +51,7 @@
 <div class="mm-wrap">
   <div class="mm-frame">
     <iframe id="mm-game-{{ section.id }}"
-            src="{{ section.settings.game_url }}{% if section.settings.game_url contains '?' %}&{% else %}?{% endif %}bg={{ section.settings.bg_color | remove: '#' }}"
+            src="{{ section.settings.game_url }}{% if section.settings.game_url contains '?' %}&{% else %}?{% endif %}bg={{ section.settings.bg_color | remove: '#' }}{% if section.settings.api_url != blank %}&wait=1{% endif %}{% if section.settings.recaptcha_key != blank %}&captcha=1{% endif %}"
             title="Chewbie's Mystery Mix-Up"
             allow="autoplay; web-share"
             allowfullscreen></iframe>
@@ -65,6 +65,7 @@
   var BG        = {{ section.settings.bg_color | json }}.replace("#","");
   var GAME_URL  = BASE_URL ? BASE_URL + (BASE_URL.indexOf("?") > -1 ? "&" : "?") + "bg=" + BG : "";
   var SITE_KEY  = {{ section.settings.recaptcha_key | json }};
+  var API_URL   = {{ section.settings.api_url | json }};
   var frame     = document.getElementById("mm-game-{{ section.id }}");
   if(!frame || !GAME_URL) return;
 
@@ -99,13 +100,27 @@
     }
 
     if (m.type === "entry_submitted") {
-      // Hand the entry to whoever captures it. Nothing here stores or sends
-      // anything — wire this to Hulk Form Builder / Mailchimp / an endpoint.
       document.dispatchEvent(new CustomEvent("mystery-mix:entry", { detail: m.entry }));
 
-      // If the capture side is wired up, acknowledge so the game advances:
-      // frame.contentWindow.postMessage(
-      //   { source:"mystery-mix-host", type:"entry_accepted" }, GAME_ORIGIN);
+      if (!API_URL) return;   // no endpoint configured: the game advances on its own
+      fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(m.entry)
+      })
+      .then(function(r){ return r.json().then(function(d){ return { ok: r.ok, d: d }; }); })
+      .then(function(x){
+        frame.contentWindow.postMessage(x.ok
+          ? { source: "mystery-mix-host", type: "entry_accepted" }
+          : { source: "mystery-mix-host", type: "entry_rejected",
+              message: (x.d && x.d.error) || "Something went wrong. Please try again." },
+          GAME_ORIGIN);
+      })
+      .catch(function(){
+        frame.contentWindow.postMessage(
+          { source: "mystery-mix-host", type: "entry_rejected",
+            message: "Couldn't reach the server. Please try again." }, GAME_ORIGIN);
+      });
     }
   });
 })();
@@ -121,6 +136,12 @@
       "id": "game_url",
       "label": "Game URL",
       "info": "The hosted game, e.g. https://multiply-dev.github.io/mystery-mix-up/"
+    },
+    {
+      "type": "url",
+      "id": "api_url",
+      "label": "Entry endpoint",
+      "info": "The deployed /api/subscribe. Leave blank and entries go nowhere but the game still plays."
     },
     {
       "type": "text",
