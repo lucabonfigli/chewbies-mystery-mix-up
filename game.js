@@ -88,6 +88,9 @@
     $$(".screen").forEach(sc => {
       sc.style.backgroundImage = `url(${A}${L.bg[sc.dataset.bg]}.webp)`;
     });
+    $("#bgLive").style.backgroundImage = `url(${A}${L.bg["game-live"]}.webp)`;
+    // every screen's art is fetched now, so no screen ever pops in on first show
+    Object.values(L.bg).forEach(n => { const pre = new Image(); pre.src = `${A}${n}.webp`; });
 
     // title button: a placed overlay on desktop, a sized sprite on mobile
     const tb = L.titleBtn, o = MAN.overlay[tb.overlay], btn = $("#btn-play");
@@ -210,6 +213,16 @@
   $("#lnk-tt").href = CFG.tiktok;
 
   applyLayout();
+  // hold the whole app until the title art has decoded, then fade it in —
+  // otherwise the page purple shows, then the picture pops in over it
+  {
+    const app = $("#app"), first = new Image();
+    let shown = false;
+    const reveal = () => { if (!shown) { shown = true; app.classList.add("ready"); } };
+    first.src = `${A}${L.bg.title}.webp`;
+    first.decode().catch(() => {}).then(reveal);
+    setTimeout(reveal, 1500);                          // never hold a blank screen
+  }
   MOBILE.addEventListener("change", () => { applyLayout(); render(); });
   addEventListener("resize", fitCanvas);
 
@@ -247,7 +260,7 @@
     const sub = $("#s2-submit");
     sub.disabled = !ready;
     sub.style.opacity = ready ? "1" : ".55";
-    $("#s-game").style.backgroundImage = `url(${A}${L.bg[ready ? "game-live" : "game"]}.webp)`;
+    $("#bgLive").classList.toggle("on", ready);   // electrified layer fades in over the idle art
   }
 
   const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
