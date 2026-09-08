@@ -146,8 +146,8 @@ body.cover #app{
 
 /* ---------- chrome ---------- */
 .mute{
-  position:absolute;right:1.2%;top:1.6%;z-index:20;
-  width:3.4%;aspect-ratio:1;border-radius:50%;
+  position:fixed;right:clamp(14px,2.4vw,26px);top:clamp(14px,2.4vw,26px);z-index:20;
+  width:clamp(28px,4vw,42px);aspect-ratio:1;border-radius:50%;
   border:2px solid rgba(255,255,255,.45);background:rgba(0,0,0,.35);color:#fff;
   cursor:pointer;font-size:min(2vh,17px);line-height:1;display:grid;place-items:center;
 }
