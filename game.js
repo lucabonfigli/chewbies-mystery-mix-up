@@ -11,7 +11,9 @@
   "use strict";
 
   const A   = "build-assets/";
-  const MAN = await fetch(A + "manifest.json").then(r => r.json());
+  // versioned with the script so a cached manifest can never pin stale positions
+  const V   = new URL(document.currentScript?.src || location.href).searchParams.get("v") || Date.now();
+  const MAN = await fetch(A + "manifest.json?v=" + V).then(r => r.json());
   const pct = (v, total) => (v / total * 100) + "%";
 
   const QS  = new URLSearchParams(location.search);

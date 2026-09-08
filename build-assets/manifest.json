@@ -284,7 +284,7 @@
    "sprites": {
     "s2-submit": {
      "cx": 2021,
-     "cy": 1864
+     "cy": 1831
     },
     "s2-back": {
      "cx": 300,
@@ -363,12 +363,12 @@
    "sprites": {
     "s2-submit": {
      "cx": 542,
-     "cy": 1574,
+     "cy": 1550,
      "w": 465
     },
     "s2-back": {
      "cx": 542,
-     "cy": 1795,
+     "cy": 1739,
      "w": 190
     },
     "f-submit": {
@@ -383,6 +383,20 @@
     }
    },
    "scatter": true
+  }
+ },
+ "spriteInset": {
+  "s2-submit": {
+   "top": 33,
+   "bottom": 32,
+   "left": 32,
+   "right": 32
+  },
+  "s2-back": {
+   "top": 33,
+   "bottom": 30,
+   "left": 32,
+   "right": 32
   }
  }
 }
