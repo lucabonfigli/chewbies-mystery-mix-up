@@ -129,12 +129,6 @@
    "h": 412
   },
   {
-   "key": "JuicyStrawberry",
-   "name": "Juicy Strawberry",
-   "w": 364,
-   "h": 370
-  },
-  {
    "key": "KeyLimePie",
    "name": "Key Lime Pie",
    "w": 245,
@@ -175,6 +169,12 @@
    "name": "Rainbow Sherbet",
    "w": 291,
    "h": 338
+  },
+  {
+   "key": "Strawberry",
+   "name": "Strawberry",
+   "w": 364,
+   "h": 370
   },
   {
    "key": "StrawberryLemonade",
