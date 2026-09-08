@@ -80,7 +80,10 @@ html,body{overflow:hidden}
    OVER the housing dome, sweeping across the printed gauge. */
 .leverArm{
   position:absolute;background-repeat:no-repeat;background-size:100% 100%;
-  transition:transform .45s cubic-bezier(.5,1.7,.45,1);
+  /* easeOutQuint — both y control points are <= 1, so it decelerates into
+     position and cannot overshoot. The previous curve peaked at 1.7, which
+     is what made the lever flick back. */
+  transition:transform .3s cubic-bezier(.22,1,.36,1);
   will-change:transform;pointer-events:none;
 }
 .leverDome{
