@@ -432,8 +432,11 @@ function toggle(i){
   const at=state.picks.indexOf(i);
   if(at>-1){ state.picks.splice(at,1); sfxDrop(); emit("flavour_deselected",{index:i,name:FLAVOURS[i].name}); }
   else{
-    if(state.picks.length>=2) return;      // two only, per the brief
-    state.picks.push(i); sfxPick(i); emit("flavour_selected",{index:i,name:FLAVOURS[i].name});
+    // matches the 2025 build: a third pick clears the pair and starts over
+    // with the new flavour, rather than being refused
+    if(state.picks.length>=2) state.picks=[i];
+    else state.picks.push(i);
+    sfxPick(i); emit("flavour_selected",{index:i,name:FLAVOURS[i].name});
   }
   render();
   if(state.picks.length===2) emit("mix_created",{

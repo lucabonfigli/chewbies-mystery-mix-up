@@ -1,38 +1,45 @@
 {% comment %}
   Chewbie's Mystery Mix-Up — theme section
 
-  Follows the pattern already used by sections/mystery-game.liquid and
-  sections/easter-mystery-game.liquid on this store, with two fixes:
+  Framing reverse-engineered from the live 2025 Easter build
+  (sections/easter-mystery-game.liquid on this store): full-bleed background
+  image, a centred column, and a FIXED-HEIGHT frame rather than a ratio —
+  900px, dropping to 866px at 1152px and above. Width is 90% capped at 1100px.
+  White 7px border, 20px radius. Reproduced exactly, with the numbers exposed
+  as settings.
 
-  1. The origin check compares against the ORIGIN, not the full URL.
-     The existing sections do:
-         event.origin.includes("https://multiply-dev.github.io/house-of-mystery/")
-     event.origin is "https://multiply-dev.github.io" and never contains a
-     path, so that condition is always false, the handler always returns
-     early, and the reCAPTCHA token is never posted back. The captcha
-     handshake has never fired in either shipped campaign.
-
-  2. The frame is aspect-ratio based rather than a hardcoded 900px, and
-     switches to a portrait box under 768px. The game reads its own frame
-     shape, so a landscape box gives the desktop composition and a portrait
-     box gives the stacked mobile one.
+  The parent-side reCAPTCHA handshake the Easter section carries is dead code:
+  that game never posts "request-recaptcha" — it renders its own v2 checkbox
+  inside the iframe. Ours keeps the handshake because our game DOES use it
+  (set `recaptcha: true`), and fixes the origin check, which compares against
+  a full URL in the original and so can never match.
 {% endcomment %}
 
 <style>
+  .mm-container{
+    {% if section.settings.bg_image %}
+      background-image:url({{ section.settings.bg_image | image_url: width: 2400 }});
+      background-repeat:no-repeat; background-position:center; background-size:cover;
+    {% else %}
+      background:{{ section.settings.bg_color }};
+    {% endif %}
+  }
   .mm-wrap{
-    display:flex; justify-content:center;
-    background:{{ section.settings.bg_color }};
-    padding:{{ section.settings.pad_top }}px clamp(16px,5vw,64px) {{ section.settings.pad_bottom }}px;
+    align-items:center; display:flex; flex-direction:column;
+    gap:5rem; padding:8rem 0 15rem;
   }
   .mm-frame{
-    position:relative;
-    width:min({{ section.settings.width_pct }}%, {{ section.settings.max_width }}px);
-    aspect-ratio:{{ section.settings.ratio_w }}/{{ section.settings.ratio_h }};
-    border:7px solid #fff; border-radius:20px; overflow:hidden;
+    position:relative; overflow:hidden;
+    width:{{ section.settings.width_pct }}%;
+    max-width:{{ section.settings.max_width }}px;
+    height:{{ section.settings.height_sm }}px;
   }
-  .mm-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-  @media (max-width:768px){
-    .mm-frame{aspect-ratio:9/16;border-width:4px;border-radius:14px}
+  @media (min-width:1152px){
+    .mm-frame{ height:{{ section.settings.height_lg }}px; }
+  }
+  .mm-frame iframe{
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    border:7px solid #FFF; border-radius:20px;
   }
 </style>
 
@@ -40,6 +47,7 @@
   <script src="https://www.google.com/recaptcha/api.js?render={{ section.settings.recaptcha_key }}"></script>
 {% endif %}
 
+<div class="mm-container">
 <div class="mm-wrap">
   <div class="mm-frame">
     <iframe id="mm-game-{{ section.id }}"
@@ -127,46 +135,38 @@
       "default": "#740494"
     },
     {
-      "type": "range",
-      "id": "ratio_w",
-      "label": "Frame ratio — width",
-      "min": 1, "max": 21, "step": 1,
-      "default": 5
-    },
-    {
-      "type": "range",
-      "id": "ratio_h",
-      "label": "Frame ratio — height",
-      "min": 1, "max": 21, "step": 1,
-      "default": 4
+      "type": "image_picker",
+      "id": "bg_image",
+      "label": "Background image",
+      "info": "Full-bleed behind the game, as on the Easter page. Falls back to the colour."
     },
     {
       "type": "range",
       "id": "width_pct",
       "label": "Width of the page",
       "min": 40, "max": 100, "step": 2, "unit": "%",
-      "default": 82
+      "default": 90
     },
     {
       "type": "range",
       "id": "max_width",
-      "label": "Maximum game width",
+      "label": "Maximum width",
       "min": 600, "max": 1400, "step": 50, "unit": "px",
-      "default": 980
+      "default": 1100
     },
     {
       "type": "range",
-      "id": "pad_top",
-      "label": "Padding top",
-      "min": 0, "max": 200, "step": 8, "unit": "px",
-      "default": 80
+      "id": "height_sm",
+      "label": "Frame height, under 1152px",
+      "min": 500, "max": 1200, "step": 2, "unit": "px",
+      "default": 900
     },
     {
       "type": "range",
-      "id": "pad_bottom",
-      "label": "Padding bottom",
-      "min": 0, "max": 250, "step": 8, "unit": "px",
-      "default": 120
+      "id": "height_lg",
+      "label": "Frame height, 1152px and up",
+      "min": 500, "max": 1200, "step": 2, "unit": "px",
+      "default": 866
     }
   ],
   "presets": [{ "name": "Mystery Mix Game" }]
