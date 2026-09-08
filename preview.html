@@ -15,8 +15,7 @@
   .bar input[type=number]{width:58px}
   .mm-wrap{align-items:center;display:flex;flex-direction:column;gap:5rem;padding:8rem 0 15rem;background:var(--bg)}
   .mm-frame{position:relative;width:var(--pct);max-width:var(--max);height:var(--h);overflow:hidden}
-  .mm-frame iframe{border:7px solid #fff;border-radius:20px}
-  .mm-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .mm-frame iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:7px solid #fff;border-radius:20px}
   .readout{position:fixed;right:12px;bottom:12px;background:rgba(0,0,0,.75);color:#fff;
            font:12px/1.4 ui-monospace,monospace;padding:8px 10px;border-radius:6px}
   @media (max-width:1151px){ .mm-frame{height:900px} }
@@ -25,8 +24,8 @@
 <div class="bar">
   <strong>Embed preview</strong>
   <label>height <input type="number" id="hh" value="866" min="400" max="1200" step="2">px</label>
-  <label>width % <input type="number" id="wp" value="82" min="40" max="100" step="2"></label>
-  <label>max width <input type="number" id="mw" value="980" min="600" max="1400" step="50">px</label>
+  <label>width % <input type="number" id="wp" value="90" min="40" max="100" step="2"></label>
+  <label>max width <input type="number" id="mw" value="1100" min="600" max="1400" step="50">px</label>
   <label>background <input type="color" id="bg" value="#740494"></label>
 </div>
 
