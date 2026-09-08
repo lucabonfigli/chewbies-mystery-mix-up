@@ -1,7 +1,7 @@
-# Chewbie's Mystery Mix-Up
+# Franken Chewbie's Flavor Mash
 
-Halloween campaign game for HI-CHEW. Players mix two of twenty flavour potions
-in Chewbie's cauldron and guess the secret Mystery Mix flavour.
+Halloween campaign game for HI-CHEW. Players pick two of twenty flavours from
+Franken Chewbie's lab and pull the lever to guess the secret mystery flavour.
 
 Built for Multiply. Follows the same embed pattern as the previous campaign
 games — a self-contained build served from GitHub Pages, embedded in the
@@ -31,7 +31,7 @@ requests of any kind.
 ## Embedding
 
 Install `shopify/sections/mystery-mix-game.liquid` on the theme and add the
-"Mystery Mix Game" section. It takes the game URL, a reCAPTCHA v3 site key,
+"Flavor Mash Game" section. It takes the game URL, a reCAPTCHA v3 site key,
 background colour, width and padding as section settings.
 
 ## Integration

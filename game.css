@@ -1,7 +1,8 @@
 /* Franken Chewbie's Flavor Mash
-   Every position is a percentage of the artwork's 2880x2160 canvas, so the
-   whole game scales as one piece and the placeholder art can be swapped for
-   final art without moving anything. */
+   Every position is a percentage of the active artwork canvas — 2880x2160 on
+   desktop, 1080x1920 on mobile — so the whole game scales as one piece and
+   art can be swapped without moving anything. Type uses cqh so it scales with
+   the canvas box rather than the frame, which may letterbox. */
 
 :root{
   --page:#2a0b4e;
@@ -22,6 +23,7 @@ html,body{overflow:hidden}
 #app{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   overflow:hidden;
+  container-type:size;              /* lets type size against the canvas via cqh */
   width:min(100vw, calc(100vh * var(--cw) / var(--ch)));
   height:min(100vh, calc(100vw * var(--ch) / var(--cw)));
 }
@@ -104,16 +106,19 @@ body.cover #app{
   position:absolute;border:0;background:transparent;outline:none;
   font-family:inherit;color:#eafce0;letter-spacing:.02em;
   padding:0 1.4%;
+  font-size:clamp(11px,2.9cqh,32px);
 }
 #entryForm input::placeholder{color:rgba(215,255,190,.55)}
 #entryForm input:focus{background:rgba(160,255,120,.10)}
 .err{
   position:absolute;text-align:center;margin:0;color:#ffd23f;
   text-shadow:0 2px 6px rgba(0,0,0,.6);
+  font-size:clamp(10px,2cqh,22px);
 }
 .legal{
   position:absolute;text-align:center;margin:0;line-height:1.35;
   color:rgba(255,255,255,.82);
+  font-size:clamp(7px,1.25cqh,13px);
 }
 .legal a{color:#9cf06a}
 

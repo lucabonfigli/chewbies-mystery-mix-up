@@ -1,7 +1,8 @@
 /* Franken Chewbie's Flavor Mash
  *
- * Everything is laid out against the artwork's 2880x2160 canvas and expressed
- * as percentages, so swapping placeholder art for final art moves nothing.
+ * Two artwork canvases — desktop 2880x2160, mobile 1080x1920 — chosen by frame
+ * aspect. Every position is a percentage of the active canvas, so swapping art
+ * moves nothing and the same DOM serves both.
  *
  * The game makes no network requests. Entry data leaves only via postMessage
  * to the host page. See docs/INTEGRATION.md.
@@ -281,6 +282,7 @@
   /* the handshake the theme section already implements */
   let tokenCb = null, tokenTimer = null;
   function requestToken(cb) {
+    if (window.parent === window) return cb(null);   // no host to ask when standalone
     tokenCb = cb; clearTimeout(tokenTimer);
     tokenTimer = setTimeout(() => { const f = tokenCb; tokenCb = null; if (f) f(null); }, CFG.recaptchaMs);
     try { if (window.parent !== window) window.parent.postMessage("request-recaptcha", CFG.targetOrigin); }

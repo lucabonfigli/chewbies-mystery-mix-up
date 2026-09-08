@@ -1,5 +1,5 @@
 {% comment %}
-  Chewbie's Mystery Mix-Up — theme section
+  Franken Chewbie's Flavor Mash — theme section
 
   Framing reverse-engineered from the live 2025 Easter build
   (sections/easter-mystery-game.liquid on this store): full-bleed background
@@ -52,7 +52,7 @@
   <div class="mm-frame">
     <iframe id="mm-game-{{ section.id }}"
             src="{{ section.settings.game_url }}{% if section.settings.game_url contains '?' %}&{% else %}?{% endif %}bg={{ section.settings.bg_color | remove: '#' }}{% if section.settings.api_url != blank %}&wait=1{% endif %}{% if section.settings.recaptcha_key != blank %}&captcha=1{% endif %}"
-            title="Chewbie's Mystery Mix-Up"
+            title="Franken Chewbie's Flavor Mash"
             allow="autoplay; web-share"
             allowfullscreen></iframe>
   </div>
@@ -128,14 +128,14 @@
 
 {% schema %}
 {
-  "name": "Mystery Mix Game",
+  "name": "Flavor Mash Game",
   "class": "mystery-mix-game",
   "settings": [
     {
       "type": "url",
       "id": "game_url",
       "label": "Game URL",
-      "info": "The hosted game, e.g. https://multiply-dev.github.io/mystery-mix-up/"
+      "info": "The hosted game, e.g. https://multiply-dev.github.io/flavor-mash/"
     },
     {
       "type": "url",
@@ -190,6 +190,6 @@
       "default": 866
     }
   ],
-  "presets": [{ "name": "Mystery Mix Game" }]
+  "presets": [{ "name": "Flavor Mash Game" }]
 }
 {% endschema %}
