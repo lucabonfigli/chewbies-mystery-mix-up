@@ -53,7 +53,7 @@
   const AU = "audio/", HOVER = matchMedia("(hover:hover)");
   const snd = (() => {
     const mk = (n, loop, vol) => { const a = new Audio(AU + n + ".mp3"); a.preload = "auto"; a.loop = loop; a.volume = vol; return a; };
-    const MUSIC = .4, DUCK = .15;
+    const MUSIC = .25, DUCK = .1;
     const music = mk("music", true, MUSIC), amb = mk("bubbling", true, .3);
     const pool = Object.fromEntries(["electricity","lever1","lever2","btn-rollover","back-rollover",
                                      "btn-click","submit-click","back-click"].map(n => [n, mk(n, false, .8)]));
