@@ -83,10 +83,10 @@ body.cover #app{
    The arm art is drawn ~50deg left of vertical, so 0deg IS "all the way left";
    +50 is upright, +100 all the way right. It pivots at the shaft tip and paints
    OVER the housing dome, sweeping across the printed gauge. */
-/* Dome and arm sit above the submit button, so the housing reads as mounted
-   on top of it rather than floating behind. */
+/* Submit paints OVER the dome and arm (it follows them in the DOM), so the
+   button covers the base of the housing rather than sitting behind it. */
 .leverArm{
-  position:absolute;z-index:3;background-repeat:no-repeat;background-size:100% 100%;
+  position:absolute;background-repeat:no-repeat;background-size:100% 100%;
   /* easeOutQuint — both y control points are <= 1, so it decelerates into
      position and cannot overshoot. The previous curve peaked at 1.7, which
      is what made the lever flick back. */
@@ -94,7 +94,7 @@ body.cover #app{
   will-change:transform;pointer-events:none;
 }
 .leverDome{
-  position:absolute;z-index:2;background-repeat:no-repeat;background-size:100% 100%;
+  position:absolute;background-repeat:no-repeat;background-size:100% 100%;
   pointer-events:none;
 }
 .srOnly{
