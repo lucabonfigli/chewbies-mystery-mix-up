@@ -116,7 +116,6 @@
     $$(".screen").forEach(sc => {
       sc.style.backgroundImage = `url(${A}${L.bg[sc.dataset.bg]}.webp)`;
     });
-    $("#scenery").style.backgroundImage = $(".screen.on").style.backgroundImage;
     $("#bgLive").style.backgroundImage = `url(${A}${L.bg["game-live"]}.webp)`;
     // every screen's art is fetched now, so no screen ever pops in on first show
     Object.values(L.bg).forEach(n => { const pre = new Image(); pre.src = `${A}${n}.webp`; });
@@ -373,7 +372,6 @@
   /* --------------------------------------------------------------- flow */
   function show(id) {
     $$(".screen").forEach(s => s.classList.toggle("on", s.id === id));
-    $("#scenery").style.backgroundImage = $("#" + id).style.backgroundImage;
     document.body.dataset.screen = id;
     snd.screen(id);
     emit("screen", { screen: id.replace("s-", "") });
