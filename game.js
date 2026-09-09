@@ -230,7 +230,7 @@
     el._swap = { on, off };
   }
 
-  const LEVER_ANGLE = [30, 50, 65];   // left · middle · right — set by eye against the housing art
+  const LEVER_ANGLE = [30, 50, 67];   // left · middle · right — set by eye against the housing art
   const arm = $("#leverArm");
 
   panel.innerHTML = FLAVOURS.map((f, i) => `
