@@ -32,10 +32,10 @@
     position:relative; overflow:hidden;
     width:{{ section.settings.width_pct }}%;
     max-width:{{ section.settings.max_width }}px;
-    aspect-ratio:4/3; max-height:{{ section.settings.max_height }}px;   /* desktop art is 4:3 */
+    height:{{ section.settings.height_sm }}px;
   }
-  @media (max-width:767px){
-    .mm-frame{ aspect-ratio:9/16; max-height:none; }                    /* mobile art is 9:16 */
+  @media (min-width:1152px){
+    .mm-frame{ height:{{ section.settings.height_lg }}px; }
   }
   .mm-frame iframe{
     position:absolute; top:0; left:0; width:100%; height:100%;
@@ -177,9 +177,15 @@
     },
     {
       "type": "range",
-      "id": "max_height",
-      "label": "Maximum height",
-      "info": "The frame keeps the art's shape (4:3, or 9:16 on phones) up to this height.",
+      "id": "height_sm",
+      "label": "Frame height, under 1152px",
+      "min": 500, "max": 1200, "step": 2, "unit": "px",
+      "default": 900
+    },
+    {
+      "type": "range",
+      "id": "height_lg",
+      "label": "Frame height, 1152px and up",
       "min": 500, "max": 1200, "step": 2, "unit": "px",
       "default": 866
     }

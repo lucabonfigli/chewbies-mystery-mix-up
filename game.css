@@ -16,6 +16,16 @@ html,body{height:100%;margin:0}
 body{background:var(--page);font-family:var(--ui);overflow:hidden;-webkit-font-smoothing:antialiased}
 body[data-screen=s-form]{--page:#1e6a4c}   /* the form art's green, for any sliver outside it */
 
+/* scenery: fills the frame behind the stage; only visible where the stage
+   doesn't reach (a frame far from the art's shape). Blurred while it is the
+   same picture as the stage's own background. */
+#scenery{
+  position:absolute;inset:-6%;                /* bleed so the blur has no soft edge */
+  background:var(--page) center/cover no-repeat;
+  filter:blur(22px) brightness(.72);
+  transition:background-image .35s ease;
+}
+
 /* The canvas aspect comes from the active layout (desktop 4:3, mobile 9:16).
    When the frame is close to the canvas we COVER, so no page colour shows
    through; when it is far off we CONTAIN, because covering would throw away
