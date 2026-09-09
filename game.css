@@ -68,12 +68,13 @@ body.cover #app{
 .ovBtn.ro,.spriteBtn.ro{background-image:var(--ro)}
 .ovBtn:focus-visible,.spriteBtn:focus-visible{outline:3px solid #fff;outline-offset:6px;border-radius:8px}
 .ovBtn:active,.spriteBtn:active{transform:scale(1.03)}
+/* both kinds grow on hover; the overlay box now holds the rollover art at its true
+   aspect, so scaling the box no longer squashes anything */
+.ovBtn:hover,.ovBtn:focus-visible,.spriteBtn:hover,.spriteBtn:focus-visible{transform:scale(var(--lift))}
 /* overlay buttons are sized to the ROLLOVER art's box (it is the larger of the two);
    the idle art is drawn inside it at its own size and offset, so neither stretches */
 .ovBtn{background-size:var(--bs,100% 100%);background-position:var(--bp,0 0)}
 .ovBtn.ro{background-size:100% 100%;background-position:0 0}
-/* sprite buttons share one box for both states, so they grow on hover instead */
-.spriteBtn:hover,.spriteBtn:focus-visible{transform:scale(var(--lift))}
 .spriteBtn[disabled]{cursor:default;transform:none;background-image:var(--off,var(--base))}
 
 /* ---------- the flavour panel ---------- */

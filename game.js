@@ -53,7 +53,7 @@
        ?audio=b            music on the title and done screens only, bubbling under game + form */
   const snd = (() => {
     const MODE = QS.get("audio") === "b" ? "b" : "a";
-    const MUSIC = .25, DUCK = .1;
+    const MUSIC = .35, DUCK = .12;
     const VOL = { music: MUSIC, bubbling: .3, electricity: .8, lever1: .8, lever2: .8, "btn-rollover": .8,
                   "back-rollover": .8, "btn-click": .8, "submit-click": .8, "back-click": .8 };
     const LOOP = new Set(["music", "bubbling"]);
@@ -199,9 +199,8 @@
     });
     Object.assign($("#formErr").style, { left: pct(FB.x, CW), width: pct(FB.w, CW),
       top: pct(FB.tops[3] + FB.h + 12, CH) });
-    Object.assign($("#formLegal").style, MOBILE.matches
-      ? { left: "3%", width: "94%" }
-      : { left: "52%", width: "44%" });
+    const lw = MOBILE.matches ? 94 : 44, lcx = L.sprites["f-submit"].cx / CW * 100;
+    Object.assign($("#formLegal").style, { left: (lcx - lw / 2) + "%", width: lw + "%" });
   }
 
   /* Cover only when the frame is within ~11% of the canvas aspect, so the crop
@@ -231,7 +230,7 @@
     el._swap = { on, off };
   }
 
-  const LEVER_ANGLE = [0, 50, 100];   // left · middle · hard right
+  const LEVER_ANGLE = [20, 50, 80];   // left · middle · right; ±30° keeps the knob over the housing
   const arm = $("#leverArm");
 
   panel.innerHTML = FLAVOURS.map((f, i) => `
@@ -245,6 +244,17 @@
   });
 
   $("#flavourList").innerHTML = FLAVOURS.map(f => `<option value="${f.name}">`).join("");
+  // Browsers filter a datalist by what is typed, so a chosen flavour hides every
+  // other option. Empty the field on press so the full list opens; put the old
+  // value back on blur if nothing replaced it.
+  {
+    const fav = $("#f-fav"); let held = "";
+    fav.addEventListener("pointerdown", () => {
+      if (FLAVOURS.some(f => f.name === fav.value)) { held = fav.value; fav.value = ""; }
+    });
+    fav.addEventListener("blur", () => { if (!fav.value && held) fav.value = held; held = ""; });
+    fav.addEventListener("input", () => { held = ""; });
+  }
   // link the whole "Official Rules at <url>" phrase, whatever the url is
   $("#formLegal").innerHTML = CFG.legal.replace(/Official Rules.*(?=\.\s*$)/, m =>
     `<a href="${CFG.rulesUrl}" target="_blank" rel="noopener">${m}</a>`);
@@ -330,7 +340,7 @@
     if (token) entry.recaptchaToken = token;
     emit("entry_submitted", { entry });
     if (CFG.waitForHost) setPending(true);
-    else { setPending(false); show("s-done"); }
+    else { setPending(false); showDone(); }
   }
   function setPending(on) {
     const b = $("#f-submit"); if (!b) return;
@@ -352,7 +362,7 @@
       clearTimeout(tokenTimer); const f = tokenCb; tokenCb = null; f(m.token || null); return;
     }
     if (!m || m.source !== "mystery-mix-host") return;
-    if (m.type === "entry_accepted") { setPending(false); show("s-done"); }
+    if (m.type === "entry_accepted") { setPending(false); showDone(); }
     if (m.type === "entry_rejected") {
       setPending(false);
       $("#formErr").textContent = m.message || "Chewbie couldn't save that. Try again.";
@@ -372,9 +382,13 @@
     setTimeout(() => show("s-form"), 650);
   }
 
-  $("#btn-play").addEventListener("click", () => {
+  function lightning() {
     const fl = $("#flash"); fl.classList.remove("go"); void fl.offsetWidth; fl.classList.add("go");
-    snd.start(); snd.play("btn-click"); show("s-game");
+  }
+  function showDone() { lightning(); show("s-done"); }
+
+  $("#btn-play").addEventListener("click", () => {
+    lightning(); snd.start(); snd.play("btn-click"); show("s-game");
   });
   $("#s2-submit").addEventListener("click", submitGuess);
   $("#s2-back").addEventListener("click", () => { snd.play("back-click"); show("s-title"); });
