@@ -230,7 +230,7 @@
     el._swap = { on, off };
   }
 
-  const LEVER_ANGLE = [25, 50, 75];   // left · middle · right; ±25° keeps the shaft inside the housing both ways
+  const LEVER_ANGLE = [30, 50, 70];   // left · middle · right; ±20° keeps the shaft inside the housing both ways
   const arm = $("#leverArm");
 
   panel.innerHTML = FLAVOURS.map((f, i) => `
