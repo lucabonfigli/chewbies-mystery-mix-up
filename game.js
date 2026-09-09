@@ -186,7 +186,8 @@
     });
     Object.assign($("#formErr").style, { left: pct(FB.x, CW), width: pct(FB.w, CW),
       top: pct(FB.tops[3] + FB.h + 12, CH) });
-    const lw = MOBILE.matches ? 94 : 44, lcx = L.sprites["f-submit"].cx / CW * 100;
+    // centred on the field box, which is centred on the green section (2059 vs 2060)
+    const lw = MOBILE.matches ? 94 : 44, lcx = (FB.x + FB.w / 2) / CW * 100;
     Object.assign($("#formLegal").style, { left: (lcx - lw / 2) + "%", width: lw + "%" });
   }
 
