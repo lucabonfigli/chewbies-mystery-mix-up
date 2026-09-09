@@ -166,7 +166,7 @@
     const [aw, ah] = [L.arm.w, L.arm.h];
     const [rawW, rawH] = MAN.sprite["lever"];
     const piv = { x: 290 / rawW * aw, y: 245 / rawH * ah };
-    const hinge = { x: dm.x + dm.w / 2, y: dm.y + dm.h };
+    const hinge = { x: dm.x + dm.w / 2 + (L.arm.dx || 0), y: dm.y + dm.h };   // dx: nudge off the housing's centre
     arm.style.width  = pct(aw, CW);  arm.style.height = pct(ah, CH);
     arm.style.left   = pct(hinge.x - piv.x, CW);
     arm.style.top    = pct(hinge.y - piv.y, CH);
