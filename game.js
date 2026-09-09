@@ -230,7 +230,7 @@
     el._swap = { on, off };
   }
 
-  const LEVER_ANGLE = [20, 50, 80];   // left · middle · right; ±30° keeps the knob over the housing
+  const LEVER_ANGLE = [25, 50, 75];   // left · middle · right; ±25° keeps the shaft inside the housing both ways
   const arm = $("#leverArm");
 
   panel.innerHTML = FLAVOURS.map((f, i) => `
