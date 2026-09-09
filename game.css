@@ -79,19 +79,17 @@ body.cover #app{
 .spriteBtn[disabled]{cursor:default;transform:none;background-image:var(--off,var(--base))}
 
 /* ---------- the flavour panel ---------- */
-.panel{position:absolute;display:grid;gap:0}
-.cell{position:relative;display:flex;align-items:flex-end;justify-content:center;padding:4% 3%}
-body[data-layout=mobile] .cell{padding:2% 1%}   /* every pixel counts in the small panel */
+.panel{position:absolute;inset:0;pointer-events:none}
+.cell{position:absolute;pointer-events:auto}
 .choice{
-  --tilt:0deg;               /* per-tube base angle, set per layout */
-  --pick:0deg;               /* extra tilt while selected */
+  --pick:0deg;               /* tilt while selected */
   --scale:1;
   border:0;padding:0;background:transparent;cursor:pointer;
   width:100%;height:100%;
   background-repeat:no-repeat;background-position:center bottom;background-size:contain;
   transition:transform .22s var(--ease),filter .2s ease;
   transform-origin:center bottom;
-  transform:rotate(calc(var(--tilt) + var(--pick))) scale(var(--scale));
+  transform:rotate(var(--pick)) scale(var(--scale));
 }
 .choice:hover,.choice:focus-visible{--scale:var(--lift)}
 .choice:focus-visible{outline:3px solid #fff;outline-offset:4px;border-radius:10px}

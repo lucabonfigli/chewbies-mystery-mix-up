@@ -211,12 +211,6 @@
    "h": 358
   }
  ],
- "panel": {
-  "x": 1264,
-  "y": 138,
-  "w": 1502,
-  "h": 1296
- },
  "fieldBox": {
   "x": 1399,
   "w": 1322,
@@ -234,22 +228,12 @@
     2880,
     2160
    ],
-   "grid": [
-    5,
-    4
-   ],
    "bg": {
     "title": "bg-title",
     "game": "bg-game",
     "game-live": "bg-game-live",
     "form": "bg-form",
     "done": "bg-done"
-   },
-   "panel": {
-    "x": 1264,
-    "y": 138,
-    "w": 1502,
-    "h": 1296
    },
    "fieldBox": {
     "x": 1399,
@@ -289,31 +273,132 @@
    "sprites": {
     "s2-submit": {
      "cx": 2021,
-     "cy": 1831
+     "cy": 1831,
+     "w": 558
     },
     "s2-back": {
-     "cx": 300,
-     "cy": 2010
+     "cx": 1498,
+     "cy": 1840,
+     "w": 294
     },
     "f-submit": {
      "cx": 2021,
-     "cy": 1831
+     "cy": 1831,
+     "w": 558
     },
     "f-back": {
-     "cx": 300,
-     "cy": 2010
+     "cx": 1498,
+     "cy": 1840,
+     "w": 294
     }
    },
-   "scatter": false
+   "tubes": {
+    "BlackCherry": {
+     "cx": 2078,
+     "bottom": 481,
+     "h": 273
+    },
+    "BlueRaspberry": {
+     "cx": 1432,
+     "bottom": 1145,
+     "h": 291
+    },
+    "Blueberry": {
+     "cx": 2608,
+     "bottom": 816,
+     "h": 291
+    },
+    "CandyApple": {
+     "cx": 1698,
+     "bottom": 1301,
+     "h": 347
+    },
+    "Cola": {
+     "cx": 1625,
+     "bottom": 522,
+     "h": 294
+    },
+    "CottonCandy": {
+     "cx": 1411,
+     "bottom": 450,
+     "h": 250
+    },
+    "Grapefruit": {
+     "cx": 2426,
+     "bottom": 1112,
+     "h": 284
+    },
+    "GreenApple": {
+     "cx": 2316,
+     "bottom": 485,
+     "h": 295
+    },
+    "JuicyBloodOrange": {
+     "cx": 1659,
+     "bottom": 924,
+     "h": 349
+    },
+    "KeyLimePie": {
+     "cx": 2587,
+     "bottom": 489,
+     "h": 318
+    },
+    "LycheeRaspberry": {
+     "cx": 1529,
+     "bottom": 1444,
+     "h": 283
+    },
+    "Mango": {
+     "cx": 1840,
+     "bottom": 555,
+     "h": 300
+    },
+    "Peach": {
+     "cx": 2644,
+     "bottom": 1150,
+     "h": 295
+    },
+    "PinaColada": {
+     "cx": 2133,
+     "bottom": 885,
+     "h": 284
+    },
+    "Pineapple": {
+     "cx": 1416,
+     "bottom": 782,
+     "h": 307
+    },
+    "RainbowSherbet": {
+     "cx": 2370,
+     "bottom": 782,
+     "h": 276
+    },
+    "Strawberry": {
+     "cx": 2459,
+     "bottom": 1460,
+     "h": 307
+    },
+    "StrawberryLemonade": {
+     "cx": 1965,
+     "bottom": 1243,
+     "h": 307
+    },
+    "Watermelon": {
+     "cx": 1919,
+     "bottom": 875,
+     "h": 274
+    },
+    "YuzuLime": {
+     "cx": 2218,
+     "bottom": 1192,
+     "h": 298
+    }
+   }
   },
   "mobile": {
    "canvas": [
     1080,
     1920
-   ],
-   "grid": [
-    5,
-    4
    ],
    "bg": {
     "title": "m-bg-title",
@@ -321,12 +406,6 @@
     "game-live": "m-bg-game-live",
     "form": "m-bg-form",
     "done": "m-bg-done"
-   },
-   "panel": {
-    "x": 108,
-    "y": 445,
-    "w": 863,
-    "h": 845
    },
    "fieldBox": {
     "x": 121,
@@ -368,27 +447,128 @@
    },
    "sprites": {
     "s2-submit": {
-     "cx": 540,
-     "cy": 1595,
-     "w": 450
+     "cx": 542,
+     "cy": 1575,
+     "w": 400
     },
     "s2-back": {
      "cx": 540,
-     "cy": 1775,
-     "w": 210
+     "cy": 1780,
+     "w": 200
     },
     "f-submit": {
-     "cx": 540,
-     "cy": 1595,
-     "w": 450
+     "cx": 542,
+     "cy": 1575,
+     "w": 400
     },
     "f-back": {
      "cx": 540,
-     "cy": 1775,
-     "w": 210
+     "cy": 1780,
+     "w": 200
     }
    },
-   "scatter": false
+   "tubes": {
+    "BlackCherry": {
+     "cx": 578,
+     "bottom": 617,
+     "h": 161
+    },
+    "BlueRaspberry": {
+     "cx": 198,
+     "bottom": 1065,
+     "h": 171
+    },
+    "Blueberry": {
+     "cx": 888,
+     "bottom": 863,
+     "h": 172
+    },
+    "CandyApple": {
+     "cx": 354,
+     "bottom": 1197,
+     "h": 204
+    },
+    "Cola": {
+     "cx": 311,
+     "bottom": 691,
+     "h": 173
+    },
+    "CottonCandy": {
+     "cx": 186,
+     "bottom": 598,
+     "h": 147
+    },
+    "Grapefruit": {
+     "cx": 781,
+     "bottom": 1046,
+     "h": 167
+    },
+    "GreenApple": {
+     "cx": 716,
+     "bottom": 658,
+     "h": 172
+    },
+    "JuicyBloodOrange": {
+     "cx": 331,
+     "bottom": 946,
+     "h": 204
+    },
+    "KeyLimePie": {
+     "cx": 875,
+     "bottom": 641,
+     "h": 186
+    },
+    "LycheeRaspberry": {
+     "cx": 256,
+     "bottom": 1281,
+     "h": 166
+    },
+    "Mango": {
+     "cx": 438,
+     "bottom": 720,
+     "h": 176
+    },
+    "Peach": {
+     "cx": 909,
+     "bottom": 1108,
+     "h": 173
+    },
+    "PinaColada": {
+     "cx": 609,
+     "bottom": 856,
+     "h": 173
+    },
+    "Pineapple": {
+     "cx": 190,
+     "bottom": 842,
+     "h": 179
+    },
+    "RainbowSherbet": {
+     "cx": 748,
+     "bottom": 832,
+     "h": 160
+    },
+    "Strawberry": {
+     "cx": 800,
+     "bottom": 1290,
+     "h": 180
+    },
+    "StrawberryLemonade": {
+     "cx": 511,
+     "bottom": 1183,
+     "h": 180
+    },
+    "Watermelon": {
+     "cx": 484,
+     "bottom": 950,
+     "h": 166
+    },
+    "YuzuLime": {
+     "cx": 659,
+     "bottom": 1083,
+     "h": 173
+    }
+   }
   }
  },
  "spriteInset": {

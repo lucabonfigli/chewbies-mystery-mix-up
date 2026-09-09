@@ -102,9 +102,6 @@
   const MOBILE = matchMedia("(max-aspect-ratio: 1/1)");
   let L, CW, CH;
 
-  // deterministic per-flavour scatter, so the arrangement is stable between loads
-  const rnd = (i, salt) => { const x = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453; return x - Math.floor(x); };
-
   function applyLayout() {
     L  = MAN.layouts[MOBILE.matches ? "mobile" : "desktop"];
     [CW, CH] = L.canvas;
@@ -173,22 +170,12 @@
     arm.style.transformOrigin = (piv.x / aw * 100) + "% " + (piv.y / ah * 100) + "%";
     arm.style.backgroundImage = `url(${A}lever.webp)`;
 
-    const P = L.panel, [cols, rows] = L.grid, panel = $("#panel");
-    panel.style.left = pct(P.x, CW);  panel.style.top = pct(P.y, CH);
-    panel.style.width = pct(P.w, CW); panel.style.height = pct(P.h, CH);
-    panel.style.gridTemplateColumns = `repeat(${cols},1fr)`;
-    panel.style.gridTemplateRows    = `repeat(${rows},1fr)`;
-
-    // Dave's mock scatters and tilts the tubes rather than gridding them
+    // tubes sit exactly where the approved comp puts them: bottom-centre + height
+    // per flavour, measured from the deck; width follows each sprite's aspect
     $$(".cell").forEach((cell, i) => {
-      if (L.scatter) {
-        cell.style.transform =
-          `translate(${(rnd(i,1)-.5)*26}%, ${(rnd(i,2)-.5)*18}%)`;
-        cell.querySelector(".choice").style.setProperty("--tilt", ((rnd(i,3)-.5)*22).toFixed(1) + "deg");
-      } else {
-        cell.style.transform = "";
-        cell.querySelector(".choice").style.setProperty("--tilt", "0deg");
-      }
+      const f = FLAVOURS[i], t = L.tubes[f.key], w = t.h * f.w / f.h;
+      cell.style.left = pct(t.cx - w / 2, CW); cell.style.top = pct(t.bottom - t.h, CH);
+      cell.style.width = pct(w, CW);           cell.style.height = pct(t.h, CH);
     });
 
     const FB = L.fieldBox;
