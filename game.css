@@ -14,6 +14,7 @@
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{background:var(--page);font-family:var(--ui);overflow:hidden;-webkit-font-smoothing:antialiased}
+body[data-screen=s-form]{--page:#1e6a4c}   /* the form art's green, for any sliver outside it */
 
 /* The canvas aspect comes from the active layout (desktop 4:3, mobile 9:16).
    When the frame is close to the canvas we COVER, so no page colour shows
@@ -80,6 +81,7 @@ body.cover #app{
 /* ---------- the flavour panel ---------- */
 .panel{position:absolute;display:grid;gap:0}
 .cell{position:relative;display:flex;align-items:flex-end;justify-content:center;padding:4% 3%}
+body[data-layout=mobile] .cell{padding:2% 1%}   /* every pixel counts in the small panel */
 .choice{
   --tilt:0deg;               /* per-tube base angle, set per layout */
   --pick:0deg;               /* extra tilt while selected */
@@ -142,7 +144,7 @@ body.cover #app{
 }
 .legal a{color:#9cf06a}
 /* mobile: Back sits at 96% (Dave's comp), so the footnote gets the last 4% */
-body[data-layout=mobile] .legal{bottom:.2%;line-height:1.15;font-size:clamp(6.5px,1cqh,13px)}
+body[data-layout=mobile] .legal{bottom:1%;line-height:1.15;font-size:clamp(6.5px,1cqh,13px)}
 
 /* ---------- lightning ---------- */
 .flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:10}

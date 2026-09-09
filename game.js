@@ -372,6 +372,7 @@
   /* --------------------------------------------------------------- flow */
   function show(id) {
     $$(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+    document.body.dataset.screen = id;
     snd.screen(id);
     emit("screen", { screen: id.replace("s-", "") });
   }
