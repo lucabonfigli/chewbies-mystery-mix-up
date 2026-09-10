@@ -344,9 +344,14 @@
     if (!CFG.api) return;
     const g = window.grecaptcha && (grecaptcha.enterprise || grecaptcha);
     if (CFG.recaptchaKey && g) {
-      try { entry.recaptchaToken = await new Promise((ok, no) =>
-        g.ready(() => g.execute(CFG.recaptchaKey, { action: "submit" }).then(ok, no))); }
-      catch (e) {}                                   // the API decides what an untokened entry is worth
+      // reCAPTCHA can hang for good (blocked by an ad blocker or consent tool), so
+      // it gets 6s; after that the entry goes untokened and the API decides.
+      const token = await Promise.race([
+        new Promise(ok => { try { g.ready(() => g.execute(CFG.recaptchaKey, { action: "submit" }).then(ok, () => ok(null))); }
+                            catch (e) { ok(null); } }),
+        new Promise(ok => setTimeout(() => ok(null), 6000))
+      ]);
+      if (token) entry.recaptchaToken = token;
     }
     let r;
     try { r = await fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json" },

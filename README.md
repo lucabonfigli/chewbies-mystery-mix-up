@@ -1,49 +1,66 @@
 # Franken Chewbie's Flavor Mash
 
-Halloween campaign game for HI-CHEW. Players pick two of twenty flavours from
-Franken Chewbie's lab and pull the lever to guess the secret mystery flavour.
-
-Built for Multiply. Follows the same embed pattern as the previous campaign
-games — a self-contained build served from GitHub Pages, embedded in the
-Shopify storefront through a theme section and communicating by `postMessage`.
-
-## Layout
+HI-CHEW's Halloween 2026 campaign game. Pick two flavours from the lab, pull
+the lever, enter the sweepstakes. Runs inline in the Shopify theme; entries go
+to a Vercel function that writes them to Mailchimp.
 
 ```
-index.html                          the built game — this is what Pages serves
-src/index.html                      source template (assets as __ASSETS__)
-src/build.py                        inlines every asset as a data URI
-src/discs.json                      flavour disc geometry and colours
-assets/                             48 WebP assets (~1 MB)
-shopify/sections/                   theme section for the storefront embed
+Shopify theme section  flavor-mash-game.liquid  +  assets/mm-*   (built by build_theme.py)
+        │  POST entry (+ reCAPTCHA token)
+        ▼
+Vercel  api/subscribe.js  ──▶  Mailchimp audience
 ```
 
-## Build
+## Sources (edit these, nothing else)
+
+| file | what |
+|---|---|
+| `index.html` | the game's markup, inside `#mm-game`; also the GitHub review page |
+| `game.js` / `game.css` | the game; scoped to `#mm-game`, configured by `window.FLAVOR_MASH_CONFIG` |
+| `build-assets/manifest.json` | every position, per layout (desktop 2880×2160, mobile 1080×1920) |
+| `build-assets/*.webp`, `audio/*.mp3` | art and sound, from `assets-final/` |
+| `api/subscribe.js` | the entry endpoint; `npm test` |
+
+`python3 stamp.py` after editing the game (cache-busts the review page).
+`python3 build_theme.py` assembles `shopify/theme/` from the sources above.
+
+## Shopify
+
+The theme carries the whole game — no outside host.
+
+```
+sections/flavor-mash-game.liquid   markup + settings: API URL, reCAPTCHA site key, music A/B, frame, page background
+assets/mm-game.js · mm-game.css · mm-manifest.json · mm-*.webp · mm-*.mp3
+templates/page.flavor-mash.json    page template carrying the section
+```
+
+Install into a theme (draft or live — it only adds files):
 
 ```bash
-python3 src/build.py
+python3 build_theme.py
+shopify theme pull --store hi-chew-tp.myshopify.com --theme <ID> --path /tmp/theme
+cp -R shopify/theme/. /tmp/theme/
+shopify theme push  --store hi-chew-tp.myshopify.com --theme <ID> --path /tmp/theme \
+  --only sections/flavor-mash-game.liquid templates/page.flavor-mash.json "assets/mm-*"
 ```
 
-Rewrites `index.html` from `src/index.html` with all 48 assets inlined. No
-dependencies beyond Python 3. The output is a single file with no external
-requests of any kind.
+Then Content → Pages: the campaign page, template `flavor-mash`, Visible at launch.
+Section settings live in the theme editor; `PageBackground.jpg` goes in Files and
+is picked there.
 
-## Embedding
+Draft in place: `Hi-Chew - Flavor Mash` (#188935766296), unpublished.
 
-Install `shopify/sections/mystery-mix-game.liquid` on the theme and add the
-"Flavor Mash Game" section. It takes the game URL, a reCAPTCHA v3 site key,
-background colour, width and padding as section settings.
+## Vercel — `we-are-multiply` / `hi-chew-mystery-mix`
 
-## Integration
+`/api/subscribe` validates, verifies the reCAPTCHA token (min score 0.5), then
+upserts the contact — first entry wins — with merge fields `FNAME LNAME FLAVOR
+GUESS1 GUESS2 MIXCOLOR` and tag `mystery-mix-2026`. Returns 503 until configured.
 
-The game makes no network requests and stores nothing. Everything a player does
-leaves through `postMessage` to the parent frame — including the entry payload,
-which the host page forwards to whatever captures it.
+```
+MAILCHIMP_API_KEY   MAILCHIMP_LIST_ID   RECAPTCHA_SECRET   ALLOWED_ORIGINS=https://www.hi-chew.com
+```
 
-Events: `ready`, `resize`, `screen`, `flavour_selected`, `flavour_deselected`,
-`mix_created`, `restart`, `entry_submitted`.
+## Review page
 
-Configure by setting `window.MYSTERY_MIX_CONFIG` before the game script runs —
-`targetOrigin`, `waitForHost`, `recaptcha`, `recaptchaMs`, `flavours`.
-
-Full contract in the integration document supplied separately.
+GitHub Pages serves `index.html` (the game, full viewport) and `preview.html`
+(the game inside the Shopify framing). `?audio=b` switches the music arrangement.
