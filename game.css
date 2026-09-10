@@ -4,23 +4,26 @@
    art can be swapped without moving anything. Type uses cqh so it scales with
    the canvas box rather than the frame, which may letterbox. */
 
-:root{
+#mm-game{
   --page:#2a0b4e;
   --cw:2880; --ch:2160;
   --ui:"Baloo 2","Arial Rounded MT Bold","Helvetica Rounded",system-ui,sans-serif;
   --lift:1.09;                       /* "grow slightly larger" on hover/select */
   --ease:cubic-bezier(.34,1.5,.5,1);
 }
-*{box-sizing:border-box}
-html,body{height:100%;margin:0}
-body{background:var(--page);font-family:var(--ui);overflow:hidden;-webkit-font-smoothing:antialiased}
-body[data-screen=s-form]{--page:#1e6a4c}   /* the form art's green, for any sliver outside it */
+#mm-game,#mm-game *{box-sizing:border-box}
+/* the game fills whatever positioned box the host gives it */
+#mm-game{
+  position:absolute;inset:0;overflow:hidden;
+  container-type:size;             /* the frame: cq units below measure it */
+  background:var(--page);font-family:var(--ui);-webkit-font-smoothing:antialiased;
+}
+#mm-game[data-screen=s-form]{--page:#1e6a4c}   /* the form art's green, for any sliver outside it */
 
 /* The canvas aspect comes from the active layout (desktop 4:3, mobile 9:16).
    When the frame is close to the canvas we COVER, so no page colour shows
    through; when it is far off we CONTAIN, because covering would throw away
    most of the picture. JS decides and sets .cover. */
-html,body{overflow:hidden}
 #app{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   overflow:hidden;
@@ -29,14 +32,14 @@ html,body{overflow:hidden}
   /* CSS-only safety: if the script never runs (404 mid-deploy, blocked, thrown),
      the app still reveals at 1.5s. JS normally adds .ready well before this. */
   animation:appReveal 0s linear 1.5s forwards;
-  width:min(100vw, calc(100vh * var(--cw) / var(--ch)));
-  height:min(100vh, calc(100vw * var(--ch) / var(--cw)));
+  width:min(100cqw, calc(100cqh * var(--cw) / var(--ch)));
+  height:min(100cqh, calc(100cqw * var(--ch) / var(--cw)));
 }
 @keyframes appReveal{to{opacity:1}}
 #app.ready{opacity:1;animation:none}
-body.cover #app{
-  width:max(100vw, calc(100vh * var(--cw) / var(--ch)));
-  height:max(100vh, calc(100vw * var(--ch) / var(--cw)));
+#mm-game.cover #app{
+  width:max(100cqw, calc(100cqh * var(--cw) / var(--ch)));
+  height:max(100cqh, calc(100cqw * var(--ch) / var(--cw)));
 }
 
 /* Screens stay in the DOM and cross-fade. A display:none toggle would defeat
@@ -142,7 +145,7 @@ body.cover #app{
 }
 .legal a{color:#9cf06a}
 /* mobile: Back sits at 96% (Dave's comp), so the footnote gets the last 4% */
-body[data-layout=mobile] .legal{bottom:1%;line-height:1.15;font-size:clamp(6.5px,1cqh,13px)}
+#mm-game[data-layout=mobile] .legal{bottom:1%;line-height:1.15;font-size:clamp(6.5px,1cqh,13px)}
 
 /* ---------- lightning ---------- */
 .flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:10}
@@ -151,11 +154,11 @@ body[data-layout=mobile] .legal{bottom:1%;line-height:1.15;font-size:clamp(6.5px
 
 /* ---------- chrome ---------- */
 .mute{
-  position:fixed;right:clamp(14px,2.4vw,26px);top:clamp(14px,2.4vw,26px);z-index:20;
-  width:clamp(28px,4vw,42px);aspect-ratio:1;border-radius:50%;
+  position:absolute;right:clamp(14px,2.4cqw,26px);top:clamp(14px,2.4cqw,26px);z-index:20;
+  width:clamp(28px,4cqw,42px);aspect-ratio:1;border-radius:50%;
   border:2px solid rgba(255,255,255,.45);background:rgba(0,0,0,.35);color:#fff;
-  cursor:pointer;font-size:min(2vh,17px);line-height:1;display:grid;place-items:center;
+  cursor:pointer;font-size:min(2cqh,17px);line-height:1;display:grid;place-items:center;
 }
 @media (prefers-reduced-motion:reduce){
-  *{animation-duration:.001s!important;transition-duration:.001s!important}
+  #mm-game *{animation-duration:.001s!important;transition-duration:.001s!important}
 }

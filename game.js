@@ -4,24 +4,23 @@
  * aspect. Every position is a percentage of the active canvas, so swapping art
  * moves nothing and the same DOM serves both.
  *
- * The game makes no network requests. Entry data leaves only via postMessage
- * to the host page. See docs/INTEGRATION.md.
+ * Runs inside whatever element is #mm-game: the whole viewport on the GitHub
+ * preview, a framed box in the Shopify section. The host sets
+ * window.FLAVOR_MASH_CONFIG before this script; every key has a preview default.
+ * Entries POST straight to CFG.api when one is configured.
  */
 (async function () {
   "use strict";
 
-  const A   = "build-assets/";
-  // versioned with the script so a cached manifest can never pin stale positions
-  const V   = new URL(document.currentScript?.src || location.href).searchParams.get("v") || Date.now();
-  const MAN = await fetch(A + "manifest.json?v=" + V).then(r => r.json());
-  const pct = (v, total) => (v / total * 100) + "%";
-
   const QS  = new URLSearchParams(location.search);
   const CFG = Object.assign({
-    targetOrigin : "*",
-    waitForHost  : QS.get("wait")    === "1",
-    recaptcha    : QS.get("captcha") === "1",
-    recaptchaMs  : 8000,
+    art          : "build-assets/",      // where the art lives
+    audio        : "audio/",             // where the sounds live
+    prefix       : "",                   // "mm-" in the theme, where assets are one flat folder
+    manifest     : null,                 // full manifest URL; defaults to art + manifest.json
+    api          : "",                   // POST target for entries; none = preview, no send
+    recaptchaKey : "",                   // reCAPTCHA site key; none = no token
+    audioMode    : QS.get("audio") === "b" ? "b" : "a",
     instagram    : "https://www.instagram.com/hichewusa/",
     tiktok       : "https://www.tiktok.com/@hichewusa",
     // Dates below are the ones supplied; the URL follows the Easter page's
@@ -34,14 +33,20 @@
     flavours     : null
   }, window.FLAVOR_MASH_CONFIG || {});
 
+  const A  = CFG.art + CFG.prefix, AU = CFG.audio + CFG.prefix;
+  // versioned with the script so a cached manifest can never pin stale positions
+  const V   = new URL(document.currentScript?.src || location.href).searchParams.get("v") || Date.now();
+  const MAN = await fetch(CFG.manifest || (A + "manifest.json?v=" + V)).then(r => r.json());
+  const pct = (v, total) => (v / total * 100) + "%";
+
   const VERSION = "2.0.0";
-  const $  = s => document.querySelector(s);
-  const $$ = s => [...document.querySelectorAll(s)];
+  const root = document.getElementById("mm-game");
+  const $  = s => root.querySelector(s);
+  const $$ = s => [...root.querySelectorAll(s)];
 
   /* ---------------------------------------------------------- messaging */
   function emit(type, data) {
     const msg = Object.assign({ source: "mystery-mix", version: VERSION, type }, data || {});
-    try { if (window.parent !== window) window.parent.postMessage(msg, CFG.targetOrigin); } catch (e) {}
     window.dispatchEvent(new CustomEvent("mysterymix:" + type, { detail: msg }));
   }
 
@@ -52,14 +57,14 @@
        ?audio=a (default)  music the whole way through, bubbling under the game screen
        ?audio=b            music on the title and done screens only, bubbling under game + form */
   const snd = (() => {
-    const MODE = QS.get("audio") === "b" ? "b" : "a";
+    const MODE = CFG.audioMode;
     const MUSIC = .35, DUCK = .12;
     const VOL = { music: MUSIC, bubbling: .3, electricity: .8, lever1: .8, lever2: .8, "btn-rollover": .8,
                   "back-rollover": .8, "btn-click": .8, "submit-click": .8, "back-click": .8 };
     const LOOP = new Set(["music", "bubbling"]);
     const pool = {};
     for (const n in VOL) {
-      const a = pool[n] = new Audio(`audio/${n}.mp3`);
+      const a = pool[n] = new Audio(`${AU}${n}.mp3`);
       a.volume = VOL[n]; a.loop = LOOP.has(n); a.preload = "auto";
       if (!a.loop) a.onended = () => { if (!shots.some(b => !b.paused && !b.ended)) music.volume = MUSIC; };
     }
@@ -99,15 +104,17 @@
      Two coordinate spaces: desktop artwork is 2880x2160, mobile is 1080x1920.
      Everything below is expressed as a percentage of whichever is active, so
      one set of DOM nodes serves both. Re-runs on orientation change. */
-  const MOBILE = matchMedia("(max-aspect-ratio: 1/1)");
-  let L, CW, CH;
+  // portrait box → mobile art. Read off the root, not the window, so the same
+  // code serves the full-viewport preview and the framed section.
+  const isMobile = () => root.clientHeight > root.clientWidth;
+  let L, CW, CH, mobile;
 
   function applyLayout() {
-    L  = MAN.layouts[MOBILE.matches ? "mobile" : "desktop"];
+    mobile = isMobile();
+    L  = MAN.layouts[mobile ? "mobile" : "desktop"];
     [CW, CH] = L.canvas;
-    document.body.dataset.layout = MOBILE.matches ? "mobile" : "desktop";
-    const R = document.documentElement.style;
-    R.setProperty("--cw", CW); R.setProperty("--ch", CH);
+    root.dataset.layout = mobile ? "mobile" : "desktop";
+    root.style.setProperty("--cw", CW); root.style.setProperty("--ch", CH);
     fitCanvas();
 
     $$(".screen").forEach(sc => {
@@ -187,7 +194,7 @@
     Object.assign($("#formErr").style, { left: pct(FB.x, CW), width: pct(FB.w, CW),
       top: pct(FB.tops[3] + FB.h + 12, CH) });
     // centred on the field box, which is centred on the green section (2059 vs 2060)
-    const lw = MOBILE.matches ? 94 : 44, lcx = (FB.x + FB.w / 2) / CW * 100;
+    const lw = mobile ? 94 : 44, lcx = (FB.x + FB.w / 2) / CW * 100;
     Object.assign($("#formLegal").style, { left: (lcx - lw / 2) + "%", width: lw + "%" });
   }
 
@@ -195,8 +202,8 @@
      stays under about a tenth. Beyond that, contain and letterbox instead —
      a phone frame is far enough from 9:16 that covering would clip the panel. */
   function fitCanvas() {
-    const frame = innerWidth / innerHeight, canvas = CW / CH;
-    document.body.classList.toggle("cover", Math.abs(Math.log(frame / canvas)) < 0.107);
+    const frame = root.clientWidth / root.clientHeight, canvas = CW / CH;
+    root.classList.toggle("cover", Math.abs(Math.log(frame / canvas)) < 0.107);
   }
 
   function swapOnHover(el, base, ro, roSnd) {
@@ -260,8 +267,9 @@
     first.decode().catch(() => {}).then(reveal);
     setTimeout(reveal, 1500);                          // never hold a blank screen
   }
-  MOBILE.addEventListener("change", () => { applyLayout(); render(); });
-  addEventListener("resize", fitCanvas);
+  new ResizeObserver(() => {
+    if (isMobile() !== mobile) { applyLayout(); render(); } else fitCanvas();
+  }).observe(root);
 
   /* ------------------------------------------------------ selection */
   function toggle(i) {
@@ -321,46 +329,36 @@
       guessIndexes: [...state.picks],
       ts: new Date().toISOString()
     };
-    if (CFG.recaptcha) { setPending(true); requestToken(t => finish(entry, t)); }
-    else finish(entry, null);
-  }
-  function finish(entry, token) {
-    if (token) entry.recaptchaToken = token;
-    emit("entry_submitted", { entry });
-    if (CFG.waitForHost) setPending(true);
-    else { setPending(false); showDone(); }
+    setPending(true);
+    send(entry).then(() => { setPending(false); showDone(); },
+                     e  => { setPending(false); err.textContent = e.message; });
   }
   function setPending(on) {
     const b = $("#f-submit"); if (!b) return;
     b.disabled = on; b.style.opacity = on ? ".6" : "1";
   }
-
-  /* the handshake the theme section already implements */
-  let tokenCb = null, tokenTimer = null;
-  function requestToken(cb) {
-    if (window.parent === window) return cb(null);   // no host to ask when standalone
-    tokenCb = cb; clearTimeout(tokenTimer);
-    tokenTimer = setTimeout(() => { const f = tokenCb; tokenCb = null; if (f) f(null); }, CFG.recaptchaMs);
-    try { if (window.parent !== window) window.parent.postMessage("request-recaptcha", CFG.targetOrigin); }
-    catch (e) { clearTimeout(tokenTimer); tokenCb = null; cb(null); }
+  /* The entry goes straight to the API. With no API configured (the GitHub
+     preview) nothing is sent and the thank-you shows. */
+  async function send(entry) {
+    emit("entry_submitted", { entry });
+    if (!CFG.api) return;
+    const g = window.grecaptcha && (grecaptcha.enterprise || grecaptcha);
+    if (CFG.recaptchaKey && g) {
+      try { entry.recaptchaToken = await new Promise((ok, no) =>
+        g.ready(() => g.execute(CFG.recaptchaKey, { action: "submit" }).then(ok, no))); }
+      catch (e) {}                                   // the API decides what an untokened entry is worth
+    }
+    let r;
+    try { r = await fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json" },
+                                     body: JSON.stringify(entry) }); }
+    catch (e) { throw new Error("Chewbie couldn't reach the lab. Check your connection and try again."); }
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || "Chewbie couldn't save that. Try again.");
   }
-  addEventListener("message", e => {
-    const m = e.data;
-    if (m && m.type === "recaptcha-token" && tokenCb) {
-      clearTimeout(tokenTimer); const f = tokenCb; tokenCb = null; f(m.token || null); return;
-    }
-    if (!m || m.source !== "mystery-mix-host") return;
-    if (m.type === "entry_accepted") { setPending(false); showDone(); }
-    if (m.type === "entry_rejected") {
-      setPending(false);
-      $("#formErr").textContent = m.message || "Chewbie couldn't save that. Try again.";
-    }
-  });
 
   /* --------------------------------------------------------------- flow */
   function show(id) {
     $$(".screen").forEach(s => s.classList.toggle("on", s.id === id));
-    document.body.dataset.screen = id;
+    root.dataset.screen = id;
     snd.screen(id);
     emit("screen", { screen: id.replace("s-", "") });
   }

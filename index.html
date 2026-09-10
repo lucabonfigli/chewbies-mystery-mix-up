@@ -4,10 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Franken Chewbie's Flavor Mash</title>
-<link rel="stylesheet" href="game.css?v=859507b7">
+<link rel="stylesheet" href="game.css?v=f80add16">
+<style>html,body{height:100%;margin:0;overflow:hidden;background:#2a0b4e}body{position:relative}</style>
 </head>
 <body>
 
+<!-- #mm-game is the game's box. Here it is the whole viewport; in the Shopify
+     section it is the framed area. The markup inside is what the section
+     carries too — build_theme.py copies it from this file. -->
+<div id="mm-game">
 <div id="app">
 
   <!-- 1 · TITLE -->
@@ -52,9 +57,10 @@
   <div class="flash" id="flash" aria-hidden="true"></div>
 </div>
 <!-- outside #app: the canvas overflows the frame in cover mode, so anything
-     pinned to its corner gets clipped. Pinned to the viewport instead. -->
+     pinned to its corner gets clipped. Pinned to the frame instead. -->
 <button class="mute" id="mute" aria-label="Mute sound">&#9835;</button>
+</div>
 
-<script src="game.js?v=859507b7"></script>
+<script src="game.js?v=f80add16"></script>
 </body>
 </html>
