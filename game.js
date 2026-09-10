@@ -378,7 +378,9 @@
     lightning(); snd.start(); snd.play("btn-click"); show("s-game");
   });
   $("#s2-submit").addEventListener("click", submitGuess);
-  $("#s2-back").addEventListener("click", () => { snd.play("back-click"); show("s-title"); });
+  $("#s2-back").addEventListener("click", () => {
+    snd.play("back-click"); state.picks = []; render(); show("s-title");   // Dave: leaving the lab resets the picks
+  });
   $("#f-back").addEventListener("click", () => {
     snd.play("back-click"); state.sent = false; render(); show("s-game");
   });
