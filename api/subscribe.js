@@ -122,7 +122,8 @@ export default async function handler(req, res) {
       return json(res, 502, { error: detail || "Mailchimp rejected that entry." });
     }
     return json(res, 200, { ok: true });
-  } catch {
+  } catch (e) {
+    console.error("mailchimp unreachable:", e && e.message, "→", mc.base().replace(/lists\/.*/, "lists/…"));
     return json(res, 502, { error: "Couldn't reach Mailchimp. Please try again." });
   }
 }
