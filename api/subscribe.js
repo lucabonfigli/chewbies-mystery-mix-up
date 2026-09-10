@@ -62,6 +62,23 @@ const mc = {
       { headers: { Authorization: this.auth() } });
     return r.status === 404 ? null : r.json();
   },
+  // The audience needs a text field per merge tag the entry writes. Created on
+  // first use, remembered for the life of the instance.
+  fieldsReady: null,
+  async ensureFields() {
+    if (this.fieldsReady) return this.fieldsReady;
+    return this.fieldsReady = (async () => {
+      const base = this.base().replace(/\/members$/, "/merge-fields");
+      const r = await fetch(`${base}?fields=merge_fields.tag&count=100`, { headers: { Authorization: this.auth() } });
+      const have = new Set(((await r.json()).merge_fields || []).map(m => m.tag));
+      for (const [tag, name] of [["FLAVOR", "Favorite flavor"], ["GUESS1", "Guess 1"], ["GUESS2", "Guess 2"], ["MIXCOLOR", "Mix colour"]]) {
+        if (have.has(tag)) continue;
+        const c = await fetch(base, { method: "POST", headers: { Authorization: this.auth(), "Content-Type": "application/json" },
+                                      body: JSON.stringify({ tag, name, type: "text", required: false, public: false }) });
+        if (!c.ok) { this.fieldsReady = null; throw new Error(`merge field ${tag}: ${(await c.json()).detail || c.status}`); }
+      }
+    })();
+  },
   async put(email, body) {
     const r = await fetch(`${this.base()}/${this.hash(email)}`, {
       method: "PUT",
@@ -103,6 +120,7 @@ export default async function handler(req, res) {
     if (existing?.merge_fields?.GUESS1)
       return json(res, 200, { ok: true, duplicate: true });
 
+    await mc.ensureFields();
     const result = await mc.put(email, {
       email_address: email,
       status_if_new: "subscribed",
@@ -118,7 +136,8 @@ export default async function handler(req, res) {
     });
 
     if (!result.ok) {
-      const detail = result.data?.title || result.data?.detail;
+      const detail = result.data?.detail || result.data?.title;
+      console.error("mailchimp rejected:", result.status, detail);
       return json(res, 502, { error: detail || "Mailchimp rejected that entry." });
     }
     return json(res, 200, { ok: true });
