@@ -72,7 +72,7 @@ MARKUP
   };
 </script>
 {%- if section.settings.recaptcha_key != blank %}
-<script src="https://www.google.com/recaptcha/enterprise.js?render={{ section.settings.recaptcha_key }}" async></script>
+<script src="https://www.google.com/recaptcha/api.js?render={{ section.settings.recaptcha_key }}" async></script>
 {%- endif %}
 {{ 'mm-game.js' | asset_url | script_tag }}
 
@@ -109,7 +109,7 @@ MARKUP
 (out / "templates/page.flavor-mash.json").write_text(json.dumps({
     "sections": { "game": { "type": "flavor-mash-game", "settings": {
         "api_url": "https://hi-chew-mystery-mix.vercel.app/api/subscribe",
-        "recaptcha_key": "6LeN1vUrAAAAAOmeeaojfabBPVTBZ2M1EesKzeSR",   # the Easter section's key
+        "recaptcha_key": "6Lf0rrQtAAAAAE2ZyVTm7Aag1r5WPJRPtVn4XALK",   # Multiply.s v3 key, Sep 10 2026
         "audio_mode": "a" } } },
     "order": ["game"]
 }, indent=2) + "\n")
