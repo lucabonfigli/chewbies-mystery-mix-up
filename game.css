@@ -64,8 +64,10 @@
 .bgLive.on{opacity:1}
 
 /* ---------- buttons: --base / --ro / --off are set per layout; .ro flips the art ---------- */
+/* HI-CHEW's theme hides empty <a>s (a:empty{display:none}, specificity 0,1,1);
+   the social links are art-only, so this has to outrank it */
+#mm-game .ovBtn,#mm-game .spriteBtn{display:block}
 .ovBtn,.spriteBtn{
-  display:block;                    /* HI-CHEW's theme hides empty <a>s (a:empty{display:none}); the social links are art-only */
   position:absolute;border:0;padding:0;cursor:pointer;
   background:var(--base) no-repeat 0 0 / 100% 100%;
   transition:transform .18s var(--ease);transform-origin:center;
