@@ -27,7 +27,7 @@
     rulesUrl     : "https://www.hi-chew.com/pages/mystery-giveaway-terms",
     legal        : "*NO PURCHASE NECESSARY. Void where prohibited. Open to legal "
                  + "residents of the 50 U.S. & D.C., [18+] years or older. Sweepstakes "
-                 + "begins (02/24/2026) and ends (04/04/2026). Subject to Official Rules "
+                 + "begins (09/15/2026) and ends (10/31/2026). Subject to Official Rules "
                  + "at HI-CHEW.com/pages/mystery-giveaway-terms.",
     flavours     : null
   }, window.FLAVOR_MASH_CONFIG || {});
