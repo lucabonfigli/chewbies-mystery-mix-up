@@ -150,8 +150,10 @@ export default async function handler(req, res) {
   try {
     // first entry wins: never overwrite a guess that is already recorded
     const existing = await mc.get(email);
-    if (existing?.merge_fields?.GUESS1)
+    if (existing?.merge_fields?.GUESS1) {
+      console.log("entry duplicate:", mc.hash(email).slice(0, 8), "| origin:", req.headers.origin);
       return json(res, 200, { ok: true, duplicate: true });
+    }
 
     await mc.ensureFields();
     const result = await mc.put(email, {
@@ -176,6 +178,7 @@ export default async function handler(req, res) {
       console.error("mailchimp rejected:", result.status, detail);
       return json(res, 502, { error: detail || "Mailchimp rejected that entry." });
     }
+    console.log("entry ok:", mc.hash(email).slice(0, 8), "| guess:", guess.join(" + "), "| origin:", req.headers.origin, "| captcha:", captcha.score ?? "skipped");
     return json(res, 200, { ok: true });
   } catch (e) {
     console.error("mailchimp unreachable:", e && e.message, "→", mc.base().replace(/lists\/.*/, "lists/…"));
