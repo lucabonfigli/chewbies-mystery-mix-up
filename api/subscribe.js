@@ -67,14 +67,19 @@ const mc = {
     return r.status === 404 ? null : r.json();
   },
   // The audience needs a text field per merge tag the entry writes. Created on
-  // first use, remembered for the life of the instance.
-  fieldsReady: null,
+  // first use, remembered for the life of the instance. The audience's own
+  // "Mystery Flavor Guess" and "Form" fields (from last year's game) are found
+  // by name so the team's existing columns and filters keep working.
+  fieldsReady: null, guessTag: null, formTag: null,
   async ensureFields() {
     if (this.fieldsReady) return this.fieldsReady;
     return this.fieldsReady = (async () => {
       const base = this.base().replace(/\/members$/, "/merge-fields");
-      const r = await fetch(`${base}?fields=merge_fields.tag&count=100`, { headers: { Authorization: this.auth() } });
-      const have = new Set(((await r.json()).merge_fields || []).map(m => m.tag));
+      const r = await fetch(`${base}?fields=merge_fields.tag,merge_fields.name&count=100`, { headers: { Authorization: this.auth() } });
+      const fields = (await r.json()).merge_fields || [];
+      const have = new Set(fields.map(m => m.tag));
+      this.guessTag = fields.find(m => /mystery\s*flavou?r\s*guess/i.test(m.name))?.tag || null;
+      this.formTag  = fields.find(m => m.tag === "FORM" || /^form$/i.test(m.name))?.tag || null;
       for (const [tag, name] of [["FLAVOR", "Favorite flavor"], ["GUESS1", "Guess 1"], ["GUESS2", "Guess 2"], ["MIXCOLOR", "Mix colour"]]) {
         if (have.has(tag)) continue;
         const c = await fetch(base, { method: "POST", headers: { Authorization: this.auth(), "Content-Type": "application/json" },
@@ -137,7 +142,9 @@ export default async function handler(req, res) {
         FLAVOR: favourite,
         GUESS1: guess[0],
         GUESS2: guess[1],
-        MIXCOLOR: String(b.mixColour ?? "")
+        MIXCOLOR: String(b.mixColour ?? ""),
+        ...(mc.guessTag ? { [mc.guessTag]: guess.join(" + ") } : {}),
+        ...(mc.formTag  ? { [mc.formTag]: "Flavor Mash Game" } : {})
       },
       tags: [TAG]
     });
