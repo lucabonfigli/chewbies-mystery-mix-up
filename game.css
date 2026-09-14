@@ -144,7 +144,7 @@
 .legal{
   position:absolute;bottom:1%;text-align:center;margin:0;line-height:1.3;
   color:rgba(255,255,255,.82);
-  font-size:clamp(6.5px,1.05cqh,11px);   /* the client's full sweepstakes copy, six lines */
+  font-size:clamp(6.5px,.98cqh,11px);   /* the client's full sweepstakes copy: four lines in Baloo on the live site */
 }
 .legal a{color:#9cf06a}
 /* mobile: Back sits at 96% (Dave's comp), so the footnote gets the last 4% */
