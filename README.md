@@ -44,7 +44,8 @@ shopify theme push  --store hi-chew-tp.myshopify.com --theme <ID> --path /tmp/th
   --only sections/flavor-mash-game.liquid templates/page.flavor-mash.json "assets/mm-*"
 ```
 
-Then Content → Pages: the campaign page, template `flavor-mash`, Visible at launch.
+The campaign page is **hi-chew.com/pages/flavor-mash-game** (template `flavor-mash`; Visible at launch).
+Official Rules live at `/pages/mystery-giveaway-terms`.
 Section settings live in the theme editor; `PageBackground.jpg` goes in Files and
 is picked there.
 
