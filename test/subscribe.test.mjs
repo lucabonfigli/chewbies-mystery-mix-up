@@ -18,7 +18,7 @@ function stub({ member = null, putOk = true, score = 0.9 } = {}) {
     if (String(url).includes("siteverify"))
       return { json: async () => ({ success: true, score }) };
     if ((opts.method || "GET") === "GET")
-      return member ? { status: 200, json: async () => member } : { status: 404, json: async () => ({}) };
+      return member ? { ok: true, status: 200, json: async () => member } : { ok: false, status: 404, json: async () => ({}) };
     return { ok: putOk, status: putOk ? 200 : 400, json: async () => ({ title: "Invalid Resource" }) };
   };
 }

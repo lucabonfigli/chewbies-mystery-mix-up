@@ -33,11 +33,26 @@ function cors(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
+/* Upstream calls never hang (8s) and a busy Mailchimp — it allows 10 simultaneous
+   connections per key — gets three tries with backoff instead of an error to the player. */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function call(url, opts = {}, { retries = 0 } = {}) {
+  for (let attempt = 0; ; attempt++) {
+    const r = await fetch(url, { ...opts, signal: AbortSignal.timeout(8000) });
+    if ((r.status === 429 || r.status >= 500) && attempt < retries) {
+      const after = Number(r.headers.get("retry-after")) * 1000 || 0;
+      await sleep(Math.max(after, 400 * 2 ** attempt + Math.random() * 300));
+      continue;
+    }
+    return r;
+  }
+}
+
 async function verifyCaptcha(token) {
   const secret = process.env.RECAPTCHA_SECRET;
   if (!secret) return { ok: true, skipped: true };      // not configured yet
   if (!token) return { ok: false, reason: "missing captcha token" };
-  const r = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+  const r = await call("https://www.google.com/recaptcha/api/siteverify", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ secret, response: token })
@@ -62,9 +77,11 @@ const mc = {
     return createHash("md5").update(email.toLowerCase()).digest("hex");
   },
   async get(email) {
-    const r = await fetch(`${this.base()}/${this.hash(email)}`,
-      { headers: { Authorization: this.auth() } });
-    return r.status === 404 ? null : r.json();
+    const r = await call(`${this.base()}/${this.hash(email)}`,
+      { headers: { Authorization: this.auth() } }, { retries: 3 });
+    if (r.status === 404) return null;
+    if (!r.ok) throw new Error(`lookup ${r.status}`);   // never mistake an outage for "new contact"
+    return r.json();
   },
   // The audience needs a text field per merge tag the entry writes. Created on
   // first use, remembered for the life of the instance. The audience's own
@@ -75,25 +92,25 @@ const mc = {
     if (this.fieldsReady) return this.fieldsReady;
     return this.fieldsReady = (async () => {
       const base = this.base().replace(/\/members$/, "/merge-fields");
-      const r = await fetch(`${base}?fields=merge_fields.tag,merge_fields.name&count=100`, { headers: { Authorization: this.auth() } });
+      const r = await call(`${base}?fields=merge_fields.tag,merge_fields.name&count=100`, { headers: { Authorization: this.auth() } }, { retries: 3 });
       const fields = (await r.json()).merge_fields || [];
       const have = new Set(fields.map(m => m.tag));
       this.guessTag = fields.find(m => /mystery\s*flavou?r\s*guess/i.test(m.name))?.tag || null;
       this.formTag  = fields.find(m => m.tag === "FORM" || /^form$/i.test(m.name))?.tag || null;
       for (const [tag, name] of [["PHONE", "Phone"], ["CITYSTATE", "City, State"], ["GUESS1", "Guess 1"], ["GUESS2", "Guess 2"], ["MIXCOLOR", "Mix colour"]]) {
         if (have.has(tag)) continue;
-        const c = await fetch(base, { method: "POST", headers: { Authorization: this.auth(), "Content-Type": "application/json" },
+        const c = await call(base, { method: "POST", headers: { Authorization: this.auth(), "Content-Type": "application/json" },
                                       body: JSON.stringify({ tag, name, type: "text", required: false, public: false }) });
         if (!c.ok) { this.fieldsReady = null; throw new Error(`merge field ${tag}: ${(await c.json()).detail || c.status}`); }
       }
     })();
   },
   async put(email, body) {
-    const r = await fetch(`${this.base()}/${this.hash(email)}`, {
+    const r = await call(`${this.base()}/${this.hash(email)}`, {
       method: "PUT",
       headers: { Authorization: this.auth(), "Content-Type": "application/json" },
       body: JSON.stringify(body)
-    });
+    }, { retries: 3 });
     return { ok: r.ok, status: r.status, data: await r.json() };
   }
 };

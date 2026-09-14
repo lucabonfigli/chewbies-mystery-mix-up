@@ -345,7 +345,7 @@
     }
     let r;
     try { r = await fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json" },
-                                     body: JSON.stringify(entry) }); }
+                                     body: JSON.stringify(entry), signal: AbortSignal.timeout(25000) }); }
     catch (e) { throw new Error("Chewbie couldn't reach the lab. Check your connection and try again."); }
     if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || "Chewbie couldn't save that. Try again.");
   }
