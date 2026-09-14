@@ -112,6 +112,16 @@ const mc = {
       body: JSON.stringify(body)
     }, { retries: 3 });
     return { ok: r.ok, status: r.status, data: await r.json() };
+  },
+  // PUT only tags brand-new members; a returning Chew Crew contact keeps its old
+  // tags. The tags endpoint applies to everyone.
+  async tag(email, name) {
+    const r = await call(`${this.base()}/${this.hash(email)}/tags`, {
+      method: "POST",
+      headers: { Authorization: this.auth(), "Content-Type": "application/json" },
+      body: JSON.stringify({ tags: [{ name, status: "active" }] })
+    }, { retries: 3 });
+    return r.ok || r.status === 204;
   }
 };
 
@@ -178,7 +188,9 @@ export default async function handler(req, res) {
       console.error("mailchimp rejected:", result.status, detail);
       return json(res, 502, { error: detail || "Mailchimp rejected that entry." });
     }
-    console.log("entry ok:", mc.hash(email).slice(0, 8), "| guess:", guess.join(" + "), "| origin:", req.headers.origin, "| captcha:", captcha.score ?? "skipped");
+    const tagged = await mc.tag(email, TAG);
+    console.log("entry ok:", mc.hash(email).slice(0, 8), "| guess:", guess.join(" + "), "| status:", result.data?.status,
+                "| tagged:", tagged, "| origin:", req.headers.origin, "| captcha:", captcha.score ?? "skipped");
     return json(res, 200, { ok: true });
   } catch (e) {
     console.error("mailchimp unreachable:", e && e.message, "→", mc.base().replace(/lists\/.*/, "lists/…"));
