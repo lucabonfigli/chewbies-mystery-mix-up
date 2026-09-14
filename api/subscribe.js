@@ -44,7 +44,7 @@ async function verifyCaptcha(token) {
   });
   const d = await r.json();
   const min = Number(process.env.RECAPTCHA_MIN_SCORE ?? 0.5);
-  if (!d.success) return { ok: false, reason: "captcha rejected" };
+  if (!d.success) return { ok: false, reason: "captcha rejected: " + (d["error-codes"] || []).join(",") };
   if (typeof d.score === "number" && d.score < min)
     return { ok: false, reason: "captcha score too low" };
   return { ok: true, score: d.score };
@@ -116,7 +116,10 @@ export default async function handler(req, res) {
   if (guess.length !== 2)       return json(res, 400, { error: "Two flavors must be mixed." });
 
   const captcha = await verifyCaptcha(b.recaptchaToken);
-  if (!captcha.ok) return json(res, 400, { error: "Couldn't verify that you're human." });
+  if (!captcha.ok) {
+    console.error("captcha refused:", captcha.reason, "| origin:", req.headers.origin, "| token:", b.recaptchaToken ? "present" : "none");
+    return json(res, 400, { error: "Couldn't verify that you're human." });
+  }
 
   try {
     // first entry wins: never overwrite a guess that is already recorded
