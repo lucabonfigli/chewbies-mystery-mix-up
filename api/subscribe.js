@@ -21,7 +21,11 @@ function cors(req, res) {
   const allowed = (process.env.ALLOWED_ORIGINS || "")
     .split(",").map(s => s.trim()).filter(Boolean);
   const origin = req.headers.origin;
-  if (allowed.length === 0 || (origin && allowed.includes(origin))) {
+  // entries like "https://*.shopifypreview.com" match any subdomain (theme previews)
+  const ok = o => allowed.some(a => a.startsWith("https://*.")
+    ? o.startsWith("https://") && o.endsWith(a.slice("https://*".length)) && !o.slice(8, -a.slice("https://*".length).length).includes("/")
+    : a === o);
+  if (allowed.length === 0 || (origin && ok(origin))) {
     res.setHeader("Access-Control-Allow-Origin", origin || "*");
   }
   res.setHeader("Vary", "Origin");
