@@ -23,12 +23,15 @@
     audioMode    : QS.get("audio") === "b" ? "b" : "a",
     instagram    : "https://www.instagram.com/hichewusa/",
     tiktok       : "https://www.tiktok.com/@hichewusa",
-    // Dates below are the ones supplied.
-    rulesUrl     : "https://www.hi-chew.com/pages/mystery-giveaway-terms",
-    legal        : "*NO PURCHASE NECESSARY. Void where prohibited. Open to legal "
-                 + "residents of the 50 U.S. & D.C., [18+] years or older. Sweepstakes "
-                 + "begins (09/15/2026) and ends (10/31/2026). Subject to Official Rules "
-                 + "at HI-CHEW.com/pages/mystery-giveaway-terms.",
+    // Legal copy as supplied by the client (Sep 14). The URL inside it becomes the link.
+    rulesUrl     : "https://www.hi-chew.com/pages/flavor-mash-terms",
+    legal        : "NO PURCHASE NECESSARY. A PURCHASE WILL NOT INCREASE YOUR CHANCES OF WINNING. "
+                 + "Open only to legal residents of the 50 US/DC, 18 years of age and older. "
+                 + "Void where prohibited by law. Sweepstakes starts at 12:00 a.m. PT on 9/15/26 "
+                 + "and ends at 11:59 p.m. PT on 10/30/26. Subject to Official Rules, including "
+                 + "entry methods, prize details, odds, and restrictions: "
+                 + "www.hi-chew.com/pages/flavor-mash-terms. Sponsor: Morinaga America, Inc., "
+                 + "4 Park Plaza, Ste 750, Irvine, CA 92614",
     flavours     : null
   }, window.FLAVOR_MASH_CONFIG || {});
 
@@ -185,7 +188,7 @@
     });
 
     const FB = L.fieldBox;
-    ["#f-first","#f-last","#f-email","#f-fav"].forEach((id, n) => {
+    ["#f-name","#f-phone","#f-email","#f-city"].forEach((id, n) => {
       const el = $(id);
       el.style.left = pct(FB.x, CW); el.style.width = pct(FB.w, CW);
       el.style.top  = pct(FB.tops[n], CH); el.style.height = pct(FB.h, CH);
@@ -193,7 +196,7 @@
     Object.assign($("#formErr").style, { left: pct(FB.x, CW), width: pct(FB.w, CW),
       top: pct(FB.tops[3] + FB.h + 12, CH) });
     // centred on the field box, which is centred on the green section (2059 vs 2060)
-    const lw = mobile ? 94 : 44, lcx = (FB.x + FB.w / 2) / CW * 100;
+    const lw = mobile ? 98 : 44, lcx = (FB.x + FB.w / 2) / CW * 100;
     Object.assign($("#formLegal").style, { left: (lcx - lw / 2) + "%", width: lw + "%" });
   }
 
@@ -237,20 +240,8 @@
     const b = e.target.closest(".choice"); if (b) toggle(+b.dataset.i);
   });
 
-  $("#flavourList").innerHTML = FLAVOURS.map(f => `<option value="${f.name}">`).join("");
-  // Browsers filter a datalist by what is typed, so a chosen flavour hides every
-  // other option. Empty the field on press so the full list opens; put the old
-  // value back on blur if nothing replaced it.
-  {
-    const fav = $("#f-fav"); let held = "";
-    fav.addEventListener("pointerdown", () => {
-      if (FLAVOURS.some(f => f.name === fav.value)) { held = fav.value; fav.value = ""; }
-    });
-    fav.addEventListener("blur", () => { if (!fav.value && held) fav.value = held; held = ""; });
-    fav.addEventListener("input", () => { held = ""; });
-  }
-  // link the whole "Official Rules at <url>" phrase, whatever the url is
-  $("#formLegal").innerHTML = CFG.legal.replace(/Official Rules.*(?=\.\s*$)/, m =>
+  // the URL written in the legal copy becomes the link
+  $("#formLegal").innerHTML = CFG.legal.replace(/www\.hi-chew\.com\/pages\/[\w-]+/, m =>
     `<a href="${CFG.rulesUrl}" target="_blank" rel="noopener">${m}</a>`);
   $("#lnk-ig").href = CFG.instagram;
   $("#lnk-tt").href = CFG.tiktok;
@@ -313,17 +304,17 @@
   const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
   function onSubmit(e) {
     e.preventDefault();
-    const first = $("#f-first").value.trim(), last = $("#f-last").value.trim(),
-          email = $("#f-email").value.trim(), fav = $("#f-fav").value.trim();
+    const name  = $("#f-name").value.trim(),  phone = $("#f-phone").value.trim(),
+          email = $("#f-email").value.trim(), city  = $("#f-city").value.trim();
     const err = $("#formErr");
-    if (!first)              return err.textContent = "Chewbie needs a first name!";
-    if (!last)               return err.textContent = "And a last name!";
-    if (!EMAIL.test(email))  return err.textContent = "That email doesn't look right.";
-    if (!fav)                return err.textContent = "Pick your favorite flavor.";
+    if (!name)                                   return err.textContent = "Chewbie needs your name!";
+    if (phone.replace(/\D/g, "").length < 7)     return err.textContent = "That phone number doesn't look right.";
+    if (!EMAIL.test(email))                      return err.textContent = "That email doesn't look right.";
+    if (!city)                                   return err.textContent = "Where are you? City, State.";
     err.textContent = "";
     snd.play("btn-click");
     const entry = {
-      firstName: first, lastName: last, email, favourite: fav, optIn: true,
+      name, phone, email, cityState: city, optIn: true,
       guess: state.picks.map(k => FLAVOURS[k].name),
       guessIndexes: [...state.picks],
       ts: new Date().toISOString()

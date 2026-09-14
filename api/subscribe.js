@@ -80,7 +80,7 @@ const mc = {
       const have = new Set(fields.map(m => m.tag));
       this.guessTag = fields.find(m => /mystery\s*flavou?r\s*guess/i.test(m.name))?.tag || null;
       this.formTag  = fields.find(m => m.tag === "FORM" || /^form$/i.test(m.name))?.tag || null;
-      for (const [tag, name] of [["FLAVOR", "Favorite flavor"], ["GUESS1", "Guess 1"], ["GUESS2", "Guess 2"], ["MIXCOLOR", "Mix colour"]]) {
+      for (const [tag, name] of [["PHONE", "Phone"], ["CITYSTATE", "City, State"], ["GUESS1", "Guess 1"], ["GUESS2", "Guess 2"], ["MIXCOLOR", "Mix colour"]]) {
         if (have.has(tag)) continue;
         const c = await fetch(base, { method: "POST", headers: { Authorization: this.auth(), "Content-Type": "application/json" },
                                       body: JSON.stringify({ tag, name, type: "text", required: false, public: false }) });
@@ -108,16 +108,20 @@ export default async function handler(req, res) {
     return json(res, 503, { error: `Not configured: ${missing.join(", ")}` });
 
   const b = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
-  const firstName = String(b.firstName ?? "").trim();
-  const lastName  = String(b.lastName  ?? "").trim();
+  // the Sep 14 form sends name/phone/cityState; the form before it sent firstName/lastName
+  const legacy    = b.name == null && b.firstName != null;
+  const name      = legacy ? `${b.firstName ?? ""} ${b.lastName ?? ""}`.trim() : String(b.name ?? "").trim();
+  const phone     = String(b.phone     ?? "").trim();
   const email     = String(b.email     ?? "").trim();
-  const favourite = String(b.favourite ?? "").trim();
+  const cityState = String(b.cityState ?? "").trim();
   const guess     = Array.isArray(b.guess) ? b.guess.map(String) : [];
+  // Mailchimp keeps first and last apart; the form asks for one name
+  const [firstName, ...rest] = name.split(/\s+/); const lastName = rest.join(" ");
 
-  if (!firstName)               return json(res, 400, { error: "First name is required." });
-  if (!lastName)                return json(res, 400, { error: "Last name is required." });
-  if (!EMAIL_RE.test(email))    return json(res, 400, { error: "That email doesn't look right." });
-  if (!favourite)               return json(res, 400, { error: "Favorite flavor is required." });
+  if (!name)                                        return json(res, 400, { error: "Name is required." });
+  if (!legacy && phone.replace(/\D/g, "").length < 7) return json(res, 400, { error: "That phone number doesn't look right." });
+  if (!EMAIL_RE.test(email))                        return json(res, 400, { error: "That email doesn't look right." });
+  if (!legacy && !cityState)                        return json(res, 400, { error: "City and state are required." });
   if (guess.length !== 2)       return json(res, 400, { error: "Two flavors must be mixed." });
 
   const captcha = await verifyCaptcha(b.recaptchaToken);
@@ -139,7 +143,8 @@ export default async function handler(req, res) {
       merge_fields: {
         FNAME: firstName,
         LNAME: lastName,
-        FLAVOR: favourite,
+        PHONE: phone,
+        CITYSTATE: cityState,
         GUESS1: guess[0],
         GUESS2: guess[1],
         MIXCOLOR: String(b.mixColour ?? ""),

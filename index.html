@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Franken Chewbie's Flavor Mash</title>
-<link rel="stylesheet" href="game.css?v=d99a4c9f">
+<link rel="stylesheet" href="game.css?v=b5ae87c2">
 <style>html,body{height:100%;margin:0;overflow:hidden;background:#2a0b4e}body{position:relative}</style>
 </head>
 <body>
@@ -34,12 +34,12 @@
   <!-- 3 · FORM -->
   <section class="screen" id="s-form" data-bg="form">
     <form id="entryForm" novalidate>
-      <input id="f-first" name="firstName" placeholder="First Name"    autocomplete="given-name">
-      <input id="f-last"  name="lastName"  placeholder="Last Name"     autocomplete="family-name">
+      <input id="f-name"  name="name"      placeholder="Full Name"     autocomplete="name">
+      <input id="f-phone" name="phone"     placeholder="Phone Number"  type="tel"
+             autocomplete="tel" inputmode="tel">
       <input id="f-email" name="email"     placeholder="Email Address" type="email"
              autocomplete="email" inputmode="email">
-      <input id="f-fav"   name="favourite" placeholder="Favorite Flavor" list="flavourList">
-      <datalist id="flavourList"></datalist>
+      <input id="f-city"  name="cityState" placeholder="City, State"   autocomplete="address-level2">
       <p class="err" id="formErr" role="alert"></p>
       <button class="spriteBtn" id="f-submit" data-spr="s3-submit" type="submit" aria-label="Submit"></button>
       <button class="spriteBtn" id="f-back"   data-spr="s3-back"   type="button" aria-label="Back"></button>
@@ -61,6 +61,6 @@
 <button class="mute" id="mute" aria-label="Mute sound">&#9835;</button>
 </div>
 
-<script src="game.js?v=d99a4c9f"></script>
+<script src="game.js?v=b5ae87c2"></script>
 </body>
 </html>

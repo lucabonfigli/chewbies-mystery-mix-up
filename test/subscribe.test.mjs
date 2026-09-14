@@ -32,8 +32,8 @@ const res = () => {
   return r;
 };
 const entry = (over = {}) => ({
-  firstName: "Luca", lastName: "Bonfigli", email: "l@example.com",
-  favourite: "Mango", guess: ["Lemon", "Mango"], mixColour: "#f5c305",
+  name: "Luca Bonfigli", phone: "(555) 010-2030", email: "l@example.com",
+  cityState: "Charlottesville, VA", guess: ["Lemon", "Mango"], mixColour: "#f5c305",
   recaptchaToken: "tok", ...over
 });
 const post = (body, origin = "https://www.hi-chew.com") =>
@@ -63,8 +63,8 @@ test("first entry wins — a second play does not overwrite", async () => {
 
 test("rejects bad input before touching Mailchimp", async () => {
   for (const [over, field] of [
-    [{ firstName: "" }, "First name"], [{ lastName: "" }, "Last name"],
-    [{ email: "nope" }, "email"], [{ favourite: "" }, "Favorite"],
+    [{ name: "" }, "Name"], [{ phone: "12" }, "phone"],
+    [{ email: "nope" }, "email"], [{ cityState: "" }, "City"],
     [{ guess: ["only-one"] }, "Two flavors"]
   ]) {
     stub();
